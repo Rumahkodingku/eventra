@@ -819,10 +819,10 @@ None.
 
 **Files:** `docs/fullstack-architecture/*`, `AGENTS.md`
 
-- [ ] Review the plan and architecture docs for contradictions.
-- [ ] Decide whether to keep or revert the Next.js auto-generated AGENTS blocks.
-- [ ] Commit docs and AGENTS.
-- [ ] Confirm the working tree is clean.
+- [x] Review the plan and architecture docs for contradictions.
+- [x] Decide whether to keep or revert the Next.js auto-generated AGENTS blocks.
+- [x] Commit docs and AGENTS.
+- [x] Confirm the working tree is clean.
 
 **Verification:**
 
@@ -837,20 +837,20 @@ Expected: no unexpected source changes.
 
 **Files:** `docs/15-decision-log-and-document-status.md`
 
-- [ ] Add D1–D11 with approved values.
-- [ ] Note the fullstack docs status as frozen baseline.
-- [ ] Commit.
+- [x] Add D1–D11 with approved values.
+- [x] Note the fullstack docs status as frozen baseline.
+- [x] Commit.
 
 **Verification:** the decision log contains every approved item.
 
 #### Task 0.3 — Verify baseline and tag
 
-- [ ] Run `npm run typecheck`.
-- [ ] Run `npm run lint`.
-- [ ] Run `npm run test:run`.
-- [ ] Run `npm run build`.
-- [ ] Run `npm run test:e2e`.
-- [ ] Tag `baseline-frontend`.
+- [x] Run `npm run typecheck`.
+- [x] Run `npm run lint`.
+- [x] Run `npm run test:run`.
+- [x] Run `npm run build`.
+- [x] Run `npm run test:e2e`.
+- [x] Tag `baseline-frontend`.
 - [ ] Push tag if remotes are configured.
 
 **Expected:** all commands pass; tag points to the baseline commit.
@@ -918,19 +918,19 @@ Phase 0.
 
 **Files:** `package.json`, `package-lock.json`, `turbo.json`
 
-- [ ] Add npm workspaces for `apps/*` and `packages/*`.
-- [ ] Add Turbo pipeline: `dev`, `build`, `lint`, `typecheck`, `test`, `test:e2e`.
-- [ ] Keep npm as the package manager.
-- [ ] Run `npm install` to regenerate the lockfile.
+- [x] Add npm workspaces for `apps/*` and `packages/*`.
+- [x] Add Turbo pipeline: `dev`, `build`, `lint`, `typecheck`, `test`, `test:e2e`.
+- [x] Keep npm as the package manager.
+- [x] Run `npm install` to regenerate the lockfile.
 
 **Verification:** `npm ls --depth=0` resolves from the root.
 
 #### Task 1.2 — Move the app
 
-- [ ] Create `apps/web`.
-- [ ] Move source, public assets, and frontend configs.
-- [ ] Keep the existing `src` structure.
-- [ ] Do not rename routes or components.
+- [x] Create `apps/web`.
+- [x] Move source, public assets, and frontend configs.
+- [x] Keep the existing `src` structure.
+- [x] Do not rename routes or components.
 
 **Verification:** `find apps/web/src -type f | wc -l` matches the pre-move count.
 
@@ -938,29 +938,29 @@ Phase 0.
 
 **Files:** `apps/web/next.config.ts`, `apps/web/tsconfig.json`, `apps/web/playwright.config.ts`, `apps/web/vitest.config.mts`, `apps/web/biome.json`
 
-- [ ] Update `@/*` alias to `apps/web/src/*`.
-- [ ] Update Playwright `testDir` and `webServer` command.
-- [ ] Update Vitest include and alias.
-- [ ] Update Biome root and file includes.
-- [ ] Ensure `next.config.ts` still uses `@tailwindcss/turbopack`.
+- [x] Update `@/*` alias to `apps/web/src/*`.
+- [x] Update Playwright `testDir` and `webServer` command.
+- [x] Update Vitest include and alias.
+- [x] Update Biome root and file includes.
+- [x] Ensure `next.config.ts` still uses `@tailwindcss/turbopack`.
 
 **Verification:** `npm run typecheck` and `npm run build` from root.
 
 #### Task 1.4 — Update scripts and docs
 
-- [ ] Root scripts delegate to workspaces.
-- [ ] `apps/web` keeps its own scripts for direct use.
-- [ ] Update README commands and paths.
-- [ ] Update AGENTS commands and paths.
+- [x] Root scripts delegate to workspaces.
+- [x] `apps/web` keeps its own scripts for direct use.
+- [x] Update README commands and paths.
+- [x] Update AGENTS commands and paths.
 
 **Verification:** documented commands work exactly as written.
 
 #### Task 1.5 — Clean-install verification
 
-- [ ] Remove `node_modules` and `.next`.
-- [ ] Run `npm ci`.
-- [ ] Run all baseline checks.
-- [ ] Run E2E.
+- [x] Remove `node_modules` and `.next`.
+- [x] Run `npm ci`.
+- [x] Run all baseline checks.
+- [x] Run E2E.
 
 **Verification:**
 

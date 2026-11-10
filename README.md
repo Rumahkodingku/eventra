@@ -29,6 +29,8 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000).
 
+The repository uses npm workspaces and Turborepo. The Next.js app lives in `apps/web`; run commands from the repository root.
+
 Production build:
 
 ```bash
@@ -114,14 +116,14 @@ No real card number, CVV, bank credential, OTP or sensitive identity data is col
 
 ## Logo and assets
 
-- Light wordmark: `public/logo/eventra-light-mode-bg-transparent.png`
-- Dark wordmark: `public/logo/eventra-dark-mode-bg-transparent.png`
-- Mark: `public/logo/eventra-logo-mark.png`
-- OG image: `public/brand/og.png`
+- Light wordmark: `apps/web/public/logo/eventra-light-mode-bg-transparent.png`
+- Dark wordmark: `apps/web/public/logo/eventra-dark-mode-bg-transparent.png`
+- Mark: `apps/web/public/logo/eventra-logo-mark.png`
+- OG image: `apps/web/public/brand/og.png`
 
 The header switches wordmark automatically for light/dark mode. Footer, organizer sidebar, and dark panels use the dark wordmark. Compact mobile contexts use the mark. Organizer profiles use monogram initials, not the Eventra wordmark.
 
-Event photography is downloaded locally from Unsplash for this demonstration. See [`public/images/events/ATTRIBUTION.md`](public/images/events/ATTRIBUTION.md). Replace with client-approved licensed assets before a commercial launch.
+Event photography is downloaded locally from Unsplash for this demonstration. See [`apps/web/public/images/events/ATTRIBUTION.md`](apps/web/public/images/events/ATTRIBUTION.md). Replace with client-approved licensed assets before a commercial launch.
 
 The Eventra logo is a showcase brand asset and not a cleared commercial trademark.
 
@@ -136,4 +138,4 @@ The Eventra logo is a showcase brand asset and not a cleared commercial trademar
 
 ## Documentation
 
-The product and design baseline lives in [`docs/`](docs/). The full implementation plan is [`docs/16-implementation-plan.md`](docs/16-implementation-plan.md).
+The product and design baseline lives in [`docs/`](docs/). The full implementation plan is [`docs/16-implementation-plan.md`](docs/16-implementation-plan.md). The fullstack migration plan is [`docs/fullstack-architecture/11-implementation-plan.md`](docs/fullstack-architecture/11-implementation-plan.md).

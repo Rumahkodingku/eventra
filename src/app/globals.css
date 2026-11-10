@@ -1,26 +1,317 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --canvas: #f7f6f2;
+  --surface: #ffffff;
+  --surface-subtle: #f0f0ed;
+  --ink: #111318;
+  --muted: #5c6270;
+  --brand: #7357f6;
+  --brand-hover: #6245e8;
+  --brand-strong: #6245e8;
+  --brand-soft: #eeeafe;
+  --on-brand: #ffffff;
+  --line: #e5e5e2;
+  --success: #0f6b49;
+  --warning: #b7791f;
+  --warning-text: #8a5a12;
+  --danger: #a82e2e;
+  --info: #2768b2;
+  --lime: #c7f36b;
+  --midnight: #171b2b;
+  --paper: #f7f6f2;
+  --focus: #7357f6;
+  --shadow-soft: 0 18px 50px -30px rgb(17 19 24 / 0.35);
+  --shadow-lift: 0 28px 80px -36px rgb(17 19 24 / 0.5);
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.dark {
+  --canvas: #111318;
+  --surface: #171b2b;
+  --surface-subtle: #222638;
+  --ink: #f7f6f2;
+  --muted: #b6bac5;
+  --brand: #8b78ff;
+  --brand-hover: #a092ff;
+  --brand-strong: #a092ff;
+  --brand-soft: #30295b;
+  --on-brand: #111318;
+  --line: #343849;
+  --success: #45b88a;
+  --warning: #e2b45b;
+  --warning-text: #e2b45b;
+  --danger: #f07878;
+  --info: #78a9e8;
+  --focus: #a092ff;
+  --shadow-soft: 0 18px 50px -30px rgb(0 0 0 / 0.55);
+  --shadow-lift: 0 28px 80px -36px rgb(0 0 0 / 0.7);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-surface-subtle: var(--surface-subtle);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-brand: var(--brand);
+  --color-brand-hover: var(--brand-hover);
+  --color-brand-strong: var(--brand-strong);
+  --color-brand-soft: var(--brand-soft);
+  --color-on-brand: var(--on-brand);
+  --color-line: var(--line);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-warning-text: var(--warning-text);
+  --color-danger: var(--danger);
+  --color-info: var(--info);
+  --color-lime: var(--lime);
+  --color-midnight: var(--midnight);
+  --color-paper: var(--paper);
+  --color-on-lime: #111318;
+  --font-sans: var(--font-inter);
+  --font-display: var(--font-display);
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+  --radius-2xl: 2rem;
+  --shadow-soft: var(--shadow-soft);
+  --shadow-lift: var(--shadow-lift);
+  --ease-out: var(--ease-out);
+  --ease-in-out: var(--ease-in-out);
+  --ease-drawer: var(--ease-drawer);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  * {
+    border-color: var(--line);
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background: var(--canvas);
+    color: var(--ink);
+    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family:
+      var(--font-display-family), var(--font-inter), ui-sans-serif, system-ui,
+      sans-serif;
+    letter-spacing: -0.035em;
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  ::selection {
+    background: var(--lime);
+    color: #111318;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 3px;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer utilities {
+  .container-page {
+    width: 100%;
+    max-width: 1440px;
+    margin-inline: auto;
+    padding-inline: 1rem;
+  }
+
+  @media (min-width: 768px) {
+    .container-page {
+      padding-inline: 1.5rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .container-page {
+      padding-inline: 2.5rem;
+    }
+  }
+
+  .section-space {
+    padding-block: 3.5rem;
+  }
+
+  @media (min-width: 768px) {
+    .section-space {
+      padding-block: 5rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .section-space {
+      padding-block: 6.5rem;
+    }
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .text-pretty {
+    text-wrap: pretty;
+  }
+
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .hairline {
+    border-top: 1px solid var(--line);
+  }
+
+  .surface-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-soft);
+  }
+
+  .image-zoom {
+    transition: transform 500ms var(--ease-out);
+  }
+
+  .group:hover .image-zoom {
+    transform: scale(1.03);
+  }
+
+  .ticket-edge {
+    background-image:
+      radial-gradient(circle at 0 50%, transparent 8px, var(--surface) 8.5px),
+      radial-gradient(circle at 100% 50%, transparent 8px, var(--surface) 8.5px);
+    background-size: 51% 100%;
+    background-position: left, right;
+    background-repeat: no-repeat;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes dialog-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -48%) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+@keyframes slide-in-right {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes slide-in-left {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes slide-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@media print {
+  header,
+  footer,
+  nav,
+  .no-print {
+    display: none !important;
+  }
+
+  body {
+    background: #ffffff !important;
+    color: #111318 !important;
+  }
+
+  .print-ticket {
+    box-shadow: none !important;
+    border: 1px solid #d9d9d4 !important;
+  }
+
+  .print-break {
+    break-inside: avoid;
+  }
 }

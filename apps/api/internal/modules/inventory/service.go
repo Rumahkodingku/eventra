@@ -148,6 +148,12 @@ func (s *Service) Release(ctx context.Context, id string) error {
 
 func (s *Service) Confirm(ctx context.Context, id string) error {
 	return s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		return s.ConfirmTx(ctx, tx, id)
+	})
+}
+
+func (s *Service) ConfirmTx(ctx context.Context, tx *gorm.DB, id string) error {
+	{
 		var reservation Reservation
 		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).Where("id = ?", id).First(&reservation).Error; err != nil {
 			return ErrNotFound
@@ -182,7 +188,7 @@ func (s *Service) Confirm(ctx context.Context, id string) error {
 			return err
 		}
 		return tx.Model(&reservation).Updates(map[string]any{"status": "CONFIRMED", "updated_at": s.now()}).Error
-	})
+	}
 }
 
 func (s *Service) ExpireDue(ctx context.Context, limit int) (int, error) {

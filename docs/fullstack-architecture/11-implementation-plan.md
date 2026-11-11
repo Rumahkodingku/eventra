@@ -1830,11 +1830,11 @@ Phase 7.
 
 #### Task 8.4 — Idempotency
 
-- [ ] Add idempotency table and middleware.
-- [ ] Store request hash and response.
-- [ ] Same key/request returns original response.
-- [ ] Same key/different request returns 409.
-- [ ] Expire records after a safe retention window.
+- [x] Add idempotency table and middleware.
+- [x] Store request hash and response.
+- [x] Same key/request returns original response.
+- [x] Same key/different request returns 409.
+- [x] Expire records after a safe retention window.
 
 **Verification:** duplicate quote/order request tests.
 
@@ -1917,42 +1917,42 @@ Phase 8.
 
 #### Task 9.1 — Order schema and creation
 
-- [ ] Create orders, order items, attendees.
-- [ ] Create pending order from quote/reservation.
-- [ ] Snapshot event/ticket names, prices, fees, discount, seats.
-- [ ] Ensure one order per idempotency key.
-- [ ] Commit before provider call.
+- [x] Create orders, order items, attendees.
+- [x] Create pending order from quote/reservation.
+- [x] Snapshot event/ticket names, prices, fees, discount, seats.
+- [x] Ensure one order per idempotency key.
+- [x] Commit before provider call.
 
 **Verification:** order snapshot tests; no long transaction across provider.
 
 #### Task 9.2 — Payment adapter
 
-- [ ] Define `PaymentProvider` interface.
-- [ ] Implement mock provider with success/failure control.
-- [ ] Store provider reference and amount.
-- [ ] Initiate payment after commit.
-- [ ] Do not collect raw card/CVV/bank credentials.
+- [x] Define `PaymentProvider` interface.
+- [x] Implement mock provider with success/failure control.
+- [x] Store provider reference and amount.
+- [x] Initiate payment after commit.
+- [x] Do not collect raw card/CVV/bank credentials.
 
 **Verification:** provider contract tests; failure path.
 
 #### Task 9.3 — Webhook
 
-- [ ] Add `POST /webhooks/payments/{provider}`.
-- [ ] Verify signature/account/reference/amount/currency.
-- [ ] Deduplicate provider event ID.
-- [ ] Handle duplicate/out-of-order events.
-- [ ] Confirm order exactly once.
-- [ ] Return safe status codes.
+- [x] Add `POST /webhooks/payments/{provider}`.
+- [x] Verify signature/account/reference/amount/currency.
+- [x] Deduplicate provider event ID.
+- [x] Handle duplicate/out-of-order events.
+- [x] Confirm order exactly once.
+- [x] Return safe status codes.
 
 **Verification:** replay, duplicate, amount mismatch, out-of-order tests.
 
 #### Task 9.4 — Failure and retry
 
-- [ ] Create `PAYMENT_FAILED` order state.
-- [ ] Keep reservation until expiry or release per policy.
-- [ ] Allow retry with idempotency.
-- [ ] Show safe failure state in UI.
-- [ ] Do not clear cart on failure.
+- [x] Create `PAYMENT_FAILED` order state.
+- [x] Keep reservation until expiry or release per policy.
+- [x] Allow retry with idempotency.
+- [x] Show safe failure state in UI.
+- [x] Do not clear cart on failure.
 
 **Verification:** failure E2E; retry creates no duplicate order.
 
@@ -2030,40 +2030,40 @@ Phase 9.
 
 #### Task 10.1 — Ticket schema
 
-- [ ] Create tickets with unique ticket code and QR token hash.
-- [ ] Create ticket_checkins.
-- [ ] Add indexes for owner/event/status and token hash.
-- [ ] Link attendees to orders/tickets.
+- [x] Create tickets with unique ticket code and QR token hash.
+- [x] Create ticket_checkins.
+- [x] Add indexes for owner/event/status and token hash.
+- [x] Link attendees to orders/tickets.
 
 **Verification:** migration and uniqueness tests.
 
 #### Task 10.2 — Issue tickets
 
-- [ ] Issue one ticket per attendee/seat exactly once during order confirmation.
-- [ ] Use unique constraints to prevent duplication.
-- [ ] Generate opaque random QR token.
-- [ ] Store only token hash.
-- [ ] Return token only to authorized owner.
+- [x] Issue one ticket per attendee/seat exactly once during order confirmation.
+- [x] Use unique constraints to prevent duplication.
+- [x] Generate opaque random QR token.
+- [x] Store only token hash.
+- [x] Return token only to authorized owner.
 
 **Verification:** correct ticket count; duplicate confirmation issues no extra tickets.
 
 #### Task 10.3 — Wallet and detail
 
-- [ ] List tickets for current user/guest.
-- [ ] Get ticket detail with event, seat, attendee, status.
-- [ ] Enforce ownership.
-- [ ] Do not expose other users' tickets.
+- [x] List tickets for current user/guest.
+- [x] Get ticket detail with event, seat, attendee, status.
+- [x] Enforce ownership.
+- [x] Do not expose other users' tickets.
 
 **Verification:** ownership tests.
 
 #### Task 10.4 — Check-in
 
-- [ ] Add event-scoped check-in endpoint.
-- [ ] Require `checkin:write`.
-- [ ] Verify event belongs to organizer organization.
-- [ ] Atomic `VALID → USED`.
-- [ ] Record operator/time/outcome.
-- [ ] Return `TICKET_ALREADY_USED` on conflict.
+- [x] Add event-scoped check-in endpoint.
+- [x] Require `checkin:write`.
+- [x] Verify event belongs to organizer organization.
+- [x] Atomic `VALID → USED`.
+- [x] Record operator/time/outcome.
+- [x] Return `TICKET_ALREADY_USED` on conflict.
 
 **Verification:** duplicate check-in one success; cross-event/org denied.
 

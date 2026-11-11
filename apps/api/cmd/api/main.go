@@ -13,6 +13,8 @@ import (
 	"github.com/eventra/eventra/apps/api/internal/modules/catalog"
 	"github.com/eventra/eventra/apps/api/internal/modules/identity"
 	"github.com/eventra/eventra/apps/api/internal/modules/inventory"
+	"github.com/eventra/eventra/apps/api/internal/modules/order"
+	"github.com/eventra/eventra/apps/api/internal/modules/ticket"
 	"github.com/eventra/eventra/apps/api/internal/platform/cache"
 	"github.com/eventra/eventra/apps/api/internal/platform/config"
 	"github.com/eventra/eventra/apps/api/internal/platform/database"
@@ -66,6 +68,9 @@ func main() {
 	inventoryService := inventory.NewService(db, 10*time.Minute)
 	inventoryHandler := inventory.NewHandler(inventoryService)
 	cartHandler := cart.NewHandler(cart.NewService(db, inventoryService))
+	ticketService := ticket.NewService(db)
+	ticketHandler := ticket.NewHandler(ticketService)
+	orderHandler := order.NewHandler(order.NewService(db, inventoryService, ticketService), cfg.MockPaymentSecret)
 
 	server := httpserver.NewServer(
 		httpserver.ServerConfig{HTTPAddr: cfg.HTTPAddr, WebOrigin: cfg.WebOrigin},
@@ -73,6 +78,7 @@ func main() {
 		httpserver.Dependencies{
 			DB: db, Redis: redisClient, Auth: authHandler,
 			Catalog: catalogHandler, Inventory: inventoryHandler, Cart: cartHandler,
+			Order: orderHandler, Ticket: ticketHandler,
 		},
 	)
 

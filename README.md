@@ -11,7 +11,7 @@ Eventra is a premium, responsive event discovery and ticketing demo for Rumah Ko
 - Next.js `16.4.6` with App Router and Cache Components
 - React `19.3.0` + TypeScript
 - Go API with Gin, GORM, MySQL 8.4, Redis 8
-- S3-compatible image upload adapter (MinIO in local compose)
+- S3-compatible image upload adapter (Garage in local compose)
 - Tailwind CSS `4.3.3` via `@tailwindcss/turbopack`
 - Radix UI primitives for dialogs, menus, tabs and switches
 - Zustand for local UI preferences and mock-only test fixtures
@@ -28,7 +28,8 @@ Eventra is a premium, responsive event discovery and ticketing demo for Rumah Ko
 
 ```bash
 npm install
-MYSQL_PORT=3307 docker compose up -d mysql redis
+MYSQL_PORT=3307 docker compose up -d mysql redis garage
+./scripts/garage-bootstrap.sh
 cd apps/api
 export APP_ENV=development
 export DATABASE_URL='eventra:eventra@tcp(127.0.0.1:3307)/eventra?parseTime=true&charset=utf8mb4&loc=UTC'
@@ -162,7 +163,7 @@ The Eventra logo is a showcase brand asset and not a cleared commercial trademar
 - Guest wishlist is browser-local and is not merged into the server wishlist on login.
 - Event content remains in Indonesian while UI chrome is bilingual.
 - Organizer payout fields are masked sample data only.
-- MinIO is defined in compose, but the image could not be pulled in the development environment where this was verified; the S3 adapter is covered by unit tests.
+- Garage is defined in compose. Its Docker image could not be pulled in the local verification environment, so runtime presigned upload was not exercised locally; the AWS SDK adapter is covered by unit tests.
 - Offsite encrypted backups, staging deployment, and rollback drills depend on the deployment platform and are not implemented here.
 
 ## Documentation

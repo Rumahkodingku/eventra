@@ -1,0 +1,42 @@
+name: Contract CI
+
+on:
+  push:
+    paths:
+      - "apps/api/openapi/**"
+      - "packages/api-client/**"
+      - "scripts/openapi-breaking.mjs"
+      - "redocly.yaml"
+      - ".github/workflows/contract-ci.yml"
+  pull_request:
+    paths:
+      - "apps/api/openapi/**"
+      - "packages/api-client/**"
+      - "scripts/openapi-breaking.mjs"
+      - "redocly.yaml"
+      - ".github/workflows/contract-ci.yml"
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "26.13.0"
+          cache: npm
+
+      - run: npm ci
+      - run: npm run openapi:lint
+      - run: npm run docs:check
+      - run: npm run api-client:generate
+      - run: git diff --exit-code packages/api-client/src/generated/schema.ts
+      - run: npm run api-client:typecheck
+      - run: npm run openapi:contract
+      - name: OpenAPI breaking check
+        env:
+          OPENAPI_BASE_REF: origin/${{ github.base_ref || 'main' }}
+        run: npm run openapi:breaking

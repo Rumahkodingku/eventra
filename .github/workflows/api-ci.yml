@@ -1,0 +1,104 @@
+name: API CI
+
+on:
+  push:
+    paths:
+      - "apps/api/**"
+      - ".github/workflows/api-ci.yml"
+  pull_request:
+    paths:
+      - "apps/api/**"
+      - ".github/workflows/api-ci.yml"
+
+jobs:
+  api:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: eventra
+          MYSQL_USER: eventra
+          MYSQL_PASSWORD: eventra
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot --silent"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=30
+      redis:
+        image: redis:8-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd="redis-cli ping"
+          --health-interval=5s
+          --health-timeout=3s
+          --health-retries=30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.27.4"
+          cache-dependency-path: apps/api/go.sum
+
+      - name: Create test database
+        run: |
+          mysql -h 127.0.0.1 -uroot -proot -e "CREATE DATABASE IF NOT EXISTS eventra_test; CREATE DATABASE IF NOT EXISTS eventra_inventory_test; CREATE DATABASE IF NOT EXISTS eventra_engagement_test; GRANT ALL PRIVILEGES ON eventra_test.* TO 'eventra'@'%'; GRANT ALL PRIVILEGES ON eventra_inventory_test.* TO 'eventra'@'%'; GRANT ALL PRIVILEGES ON eventra_engagement_test.* TO 'eventra'@'%'; FLUSH PRIVILEGES;"
+
+      - name: Download modules
+        working-directory: apps/api
+        run: go mod download
+
+      - name: Vet
+        working-directory: apps/api
+        run: go vet ./...
+
+      - name: Unit tests
+        working-directory: apps/api
+        run: go test ./...
+
+      - name: Apply migrations
+        working-directory: apps/api
+        env:
+          APP_ENV: development
+          DATABASE_URL: eventra:eventra@tcp(127.0.0.1:3306)/eventra?parseTime=true&charset=utf8mb4&loc=UTC
+          REDIS_URL: redis://127.0.0.1:6379/0
+          MIGRATIONS_DIR: ./migrations
+        run: go run ./cmd/migrate up
+
+      - name: Seed demo data
+        working-directory: apps/api
+        env:
+          APP_ENV: development
+          DATABASE_URL: eventra:eventra@tcp(127.0.0.1:3306)/eventra?parseTime=true&charset=utf8mb4&loc=UTC
+          REDIS_URL: redis://127.0.0.1:6379/0
+        run: go run ./cmd/seed
+
+      - name: Seed catalog
+        working-directory: apps/api
+        env:
+          APP_ENV: development
+          DATABASE_URL: eventra:eventra@tcp(127.0.0.1:3306)/eventra?parseTime=true&charset=utf8mb4&loc=UTC
+          REDIS_URL: redis://127.0.0.1:6379/0
+        run: go run ./cmd/seed-catalog
+
+      - name: Integration tests
+        working-directory: apps/api
+        env:
+          TEST_DATABASE_URL: eventra:eventra@tcp(127.0.0.1:3306)/eventra_test?parseTime=true&charset=utf8mb4&loc=UTC
+          TEST_IDENTITY_DATABASE_URL: eventra:eventra@tcp(127.0.0.1:3306)/eventra?parseTime=true&charset=utf8mb4&loc=UTC
+          TEST_INVENTORY_DATABASE_URL: eventra:eventra@tcp(127.0.0.1:3306)/eventra_inventory_test?parseTime=true&charset=utf8mb4&loc=UTC
+          TEST_ENGAGEMENT_DATABASE_URL: eventra:eventra@tcp(127.0.0.1:3306)/eventra_engagement_test?parseTime=true&charset=utf8mb4&loc=UTC
+          TEST_REDIS_URL: redis://127.0.0.1:6379/0
+        run: go test -tags=integration -p 1 ./...
+
+      - name: Dependency vulnerability scan
+        working-directory: apps/api
+        run: |
+          go install golang.org/x/vuln/cmd/govulncheck@latest
+          govulncheck ./...

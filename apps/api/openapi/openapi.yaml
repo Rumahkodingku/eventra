@@ -1,0 +1,2357 @@
+openapi: 3.1.0
+info:
+  title: Eventra API
+  version: 1.0.0
+  description: |
+    Contract-first API for Eventra. This reference is generated from the same
+    `openapi.yaml` used by the generated TypeScript client and contract tests.
+
+    ## Try requests
+
+    Docs are served by the API on the same origin, so browser cookies are sent
+    automatically. After `POST /auth/login`, Scalar reads the non-HttpOnly
+    `eventra_csrf` cookie and sends it as `X-CSRF-Token` on mutating requests.
+
+    Demo accounts:
+
+    - Customer: `customer@demo.local` / `demo12345`
+    - Organizer: `organizer@demo.local` / `demo12345`
+
+    ## Rules
+
+    - All money is an integer amount in IDR.
+    - Checkout is single-event per order.
+    - `Idempotency-Key` is required on `POST /checkout/orders`. Reusing a key
+      with a different payload returns `409 IDEMPOTENCY_CONFLICT`.
+    - Errors use the envelope below. `request_id` matches the API log entry.
+
+    ```json
+    {
+      "error": {
+        "code": "VALIDATION_FAILED",
+        "message": "Invalid request.",
+        "request_id": "req_..."
+      }
+    }
+    ```
+
+    ## Pagination
+
+    List endpoints return `items` and `next_cursor`. The current implementation
+    returns an empty `next_cursor`; consumers must still treat it as optional.
+servers:
+  - url: /api/v1
+    description: Same-site API proxy
+security: []
+tags:
+  - name: Health
+    description: Liveness and readiness probes.
+  - name: Auth
+    description: Registration, login, refresh, logout, profile, and guest principals.
+  - name: Catalog
+    description: Public events, categories, venues, organizers, and ticket types.
+  - name: Cart
+    description: Server cart and promo validation.
+  - name: Checkout
+    description: Authoritative quote and inventory reservation.
+  - name: Orders
+    description: Order creation, history, attendees, and payment webhooks.
+  - name: Tickets
+    description: Ticket wallet and organizer event-scoped check-in.
+  - name: Organizer
+    description: Organization-scoped event management, analytics, and settings.
+  - name: Account
+    description: Notifications, reviews, and wishlist for the current principal.
+components:
+  securitySchemes:
+    accessCookie:
+      type: apiKey
+      in: cookie
+      name: eventra_at
+    csrfHeader:
+      type: apiKey
+      in: header
+      name: X-CSRF-Token
+  parameters:
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      schema:
+        type: string
+        example: 01J00000000000000000000000
+    Cursor:
+      name: cursor
+      in: query
+      required: false
+      schema:
+        type: string
+    Limit:
+      name: limit
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+  schemas:
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        request_id:
+          type: string
+        field_errors:
+          type: object
+          additionalProperties:
+            type: string
+    ErrorEnvelope:
+      type: object
+      required: [error]
+      properties:
+        error:
+          $ref: "#/components/schemas/Error"
+    Pagination:
+      type: object
+      required: [next_cursor]
+      properties:
+        next_cursor:
+          type: string
+    Category:
+      type: object
+      required: [id, slug, name]
+      properties:
+        id:
+          type: string
+        slug:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        image:
+          type: string
+        icon:
+          type: string
+        subcategories:
+          type: array
+          items:
+            type: string
+    Venue:
+      type: object
+      required: [id, name, city, timezone]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        address:
+          type: string
+        city:
+          type: string
+        region:
+          type: string
+        country:
+          type: string
+        timezone:
+          type: string
+        map_url:
+          type: string
+    Organizer:
+      type: object
+      required: [id, display_name]
+      properties:
+        id:
+          type: string
+        display_name:
+          type: string
+        description:
+          type: string
+        logo:
+          type: string
+        email:
+          type: string
+        social_links:
+          type: array
+          items:
+            type: object
+            required: [label, href]
+            properties:
+              label:
+                type: string
+              href:
+                type: string
+    TicketType:
+      type: object
+      required: [id, event_id, name, price, currency, quota, sold_count, kind, status]
+      properties:
+        id:
+          type: string
+        event_id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        price:
+          type: integer
+          format: int64
+        currency:
+          type: string
+          enum: [IDR]
+        quota:
+          type: integer
+        sold_count:
+          type: integer
+        min_per_order:
+          type: integer
+        max_per_order:
+          type: integer
+        sales_start_at:
+          type: string
+          format: date-time
+        sales_end_at:
+          type: string
+          format: date-time
+        benefits:
+          type: array
+          items:
+            type: string
+        status:
+          type: string
+          enum: [ACTIVE, INACTIVE, SOLD_OUT]
+        kind:
+          type: string
+          enum: [GENERAL_ADMISSION, SEATED]
+        tier_key:
+          type: string
+    Seat:
+      type: object
+      required: [id, section_id, row, number, status]
+      properties:
+        id:
+          type: string
+        section_id:
+          type: string
+        row:
+          type: string
+        number:
+          type: integer
+        status:
+          type: string
+          enum: [AVAILABLE, SOLD, BLOCKED]
+        accessible:
+          type: boolean
+    Section:
+      type: object
+      required: [id, name, tier_key, seats]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        label:
+          type: string
+        tier_key:
+          type: string
+        seats:
+          type: array
+          items:
+            $ref: "#/components/schemas/Seat"
+    VenueLayout:
+      type: object
+      required: [id, name, sections]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        sections:
+          type: array
+          items:
+            $ref: "#/components/schemas/Section"
+    EventSummary:
+      type: object
+      required: [id, slug, title, status, ticketing_mode, start_at, timezone, venue_id, ticket_types]
+      properties:
+        id:
+          type: string
+        slug:
+          type: string
+        title:
+          type: string
+        subcategory:
+          type: string
+        description:
+          type: string
+        cover_image:
+          type: string
+        status:
+          type: string
+          enum: [DRAFT, PUBLISHED, PAUSED, ENDED, CANCELLED]
+        ticketing_mode:
+          type: string
+          enum: [GENERAL_ADMISSION, RESERVED_SEATING, HYBRID]
+        start_at:
+          type: string
+          format: date-time
+        end_at:
+          type: string
+          format: date-time
+        timezone:
+          type: string
+        venue_id:
+          type: string
+        category_id:
+          type: string
+        organizer_id:
+          type: string
+        popularity:
+          type: integer
+        is_featured:
+          type: boolean
+        is_trending:
+          type: boolean
+        is_recommended:
+          type: boolean
+        limited_availability:
+          type: boolean
+        is_early_bird:
+          type: boolean
+        gallery:
+          type: array
+          items:
+            type: string
+        tags:
+          type: array
+          items:
+            type: string
+        highlights:
+          type: array
+          items:
+            type: string
+        schedule:
+          type: array
+          items:
+            type: object
+            properties:
+              time:
+                type: string
+              title:
+                type: string
+              description:
+                type: string
+        terms:
+          type: array
+          items:
+            type: string
+        age_note:
+          type: string
+        accessibility_note:
+          type: string
+        layout_id:
+          type: string
+        seat_layout:
+          $ref: "#/components/schemas/VenueLayout"
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        ticket_types:
+          type: array
+          items:
+            $ref: "#/components/schemas/TicketType"
+    EventDetail:
+      allOf:
+        - $ref: "#/components/schemas/EventSummary"
+        - type: object
+          properties:
+            gallery:
+              type: array
+              items:
+                type: string
+            tags:
+              type: array
+              items:
+                type: string
+            highlights:
+              type: array
+              items:
+                type: string
+            schedule:
+              type: array
+              items:
+                type: object
+                properties:
+                  time:
+                    type: string
+                  title:
+                    type: string
+                  description:
+                    type: string
+            terms:
+              type: array
+              items:
+                type: string
+            age_note:
+              type: string
+            accessibility_note:
+              type: string
+            layout_id:
+              type: string
+            seat_layout:
+              $ref: "#/components/schemas/VenueLayout"
+    EventList:
+      type: object
+      required: [items, next_cursor]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/EventSummary"
+        next_cursor:
+          type: string
+    TicketTypeList:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/TicketType"
+        remaining:
+          type: object
+          additionalProperties:
+            type: integer
+    User:
+      type: object
+      required: [id, name, email, role, locale]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        role:
+          type: string
+          enum: [CUSTOMER, ORGANIZER]
+        locale:
+          type: string
+          enum: [id, en]
+        created_at:
+          type: string
+          format: date-time
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+          example: customer@demo.local
+        password:
+          type: string
+          example: demo12345
+    RegisterRequest:
+      type: object
+      required: [name, email, password]
+      properties:
+        name:
+          type: string
+          example: Alya Putri
+        email:
+          type: string
+          format: email
+          example: new-user@example.com
+        phone:
+          type: string
+          example: "+6281200000000"
+        password:
+          type: string
+          example: demo12345
+    AuthResponse:
+      type: object
+      required: [user]
+      properties:
+        user:
+          $ref: "#/components/schemas/User"
+    CartItem:
+      type: object
+      required: [id, owner_key, event_id, ticket_type_id, quantity, seat_ids, unit_price_snapshot]
+      properties:
+        id:
+          type: string
+        owner_key:
+          type: string
+        event_id:
+          type: string
+        ticket_type_id:
+          type: string
+        quantity:
+          type: integer
+          minimum: 1
+        seat_ids:
+          type: array
+          items:
+            type: string
+        unit_price_snapshot:
+          type: integer
+          format: int64
+        added_at:
+          type: string
+          format: date-time
+    Cart:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/CartItem"
+        promo_code:
+          type: string
+    AddCartItemRequest:
+      type: object
+      required: [event_id, ticket_type_id, quantity, seat_ids]
+      properties:
+        event_id:
+          type: string
+        ticket_type_id:
+          type: string
+        quantity:
+          type: integer
+          minimum: 1
+        seat_ids:
+          type: array
+          items:
+            type: string
+    UpdateCartItemRequest:
+      type: object
+      required: [quantity]
+      properties:
+        quantity:
+          type: integer
+          minimum: 1
+    PromoRequest:
+      type: object
+      required: [code]
+      properties:
+        code:
+          type: string
+    QuoteRequest:
+      type: object
+      required: [event_id, items]
+      properties:
+        event_id:
+          type: string
+          example: evt-01
+        items:
+          type: array
+          example:
+            - ticket_type_id: tt-evt-01-early
+              quantity: 1
+              seat_ids: []
+          items:
+            type: object
+            required: [ticket_type_id, quantity, seat_ids]
+            properties:
+              ticket_type_id:
+                type: string
+              quantity:
+                type: integer
+                minimum: 1
+              seat_ids:
+                type: array
+                items:
+                  type: string
+        promo_code:
+          type: string
+    QuoteResponse:
+      type: object
+      required: [subtotal, service_fee, discount, total, currency]
+      properties:
+        subtotal:
+          type: integer
+          format: int64
+        service_fee:
+          type: integer
+          format: int64
+        discount:
+          type: integer
+          format: int64
+        total:
+          type: integer
+          format: int64
+        currency:
+          type: string
+          enum: [IDR]
+        promo_code:
+          type: string
+        expires_at:
+          type: string
+          format: date-time
+    ReservationRequest:
+      allOf:
+        - $ref: "#/components/schemas/QuoteRequest"
+        - type: object
+          required: [event_id]
+          properties:
+            event_id:
+              type: string
+            reservation_id:
+              type: string
+    ReservationResponse:
+      type: object
+      required: [id, status, expires_at]
+      properties:
+        id:
+          type: string
+        status:
+          type: string
+          enum: [ACTIVE, CONFIRMED, EXPIRED, RELEASED]
+        expires_at:
+          type: string
+          format: date-time
+    Buyer:
+      type: object
+      required: [name, email, phone]
+      properties:
+        name:
+          type: string
+          example: Alya Putri
+        email:
+          type: string
+          format: email
+          example: customer@demo.local
+        phone:
+          type: string
+          example: "+6281200000001"
+    AttendeeInput:
+      type: object
+      required: [full_name, email]
+      properties:
+        full_name:
+          type: string
+          example: Alya Putri
+        email:
+          type: string
+          format: email
+          example: customer@demo.local
+        phone:
+          type: string
+    CreateOrderRequest:
+      type: object
+      required: [reservation_id, buyer, payment_method, attendees, simulate_failure]
+      properties:
+        reservation_id:
+          type: string
+          example: 01J00000000000000000000000
+        promo_code:
+          type: string
+          example: EVENTRA10
+        buyer:
+          $ref: "#/components/schemas/Buyer"
+        payment_method:
+          type: string
+          example: qris
+        items:
+          type: array
+          items:
+            type: object
+            required: [ticket_type_id, quantity, seat_ids]
+            properties:
+              ticket_type_id:
+                type: string
+              quantity:
+                type: integer
+                minimum: 1
+              seat_ids:
+                type: array
+                items:
+                  type: string
+        attendees:
+          type: array
+          items:
+            $ref: "#/components/schemas/AttendeeInput"
+        simulate_failure:
+          type: boolean
+    OrderItem:
+      type: object
+      required: [id, event_id, ticket_type_id, ticket_name_snapshot, event_title_snapshot, quantity, seat_ids, unit_price_snapshot, line_subtotal]
+      properties:
+        id:
+          type: string
+        event_id:
+          type: string
+        ticket_type_id:
+          type: string
+        ticket_name_snapshot:
+          type: string
+        event_title_snapshot:
+          type: string
+        event_start_at_snapshot:
+          type: string
+          format: date-time
+        venue_name_snapshot:
+          type: string
+        quantity:
+          type: integer
+        seat_ids:
+          type: array
+          items:
+            type: string
+        unit_price_snapshot:
+          type: integer
+          format: int64
+        line_subtotal:
+          type: integer
+          format: int64
+        attendee_ids:
+          type: array
+          items:
+            type: string
+    Order:
+      type: object
+      required: [id, order_number, owner_key, buyer_name, buyer_email, buyer_phone, items, subtotal, service_fee, discount, total, currency, payment_status, order_status, created_at]
+      properties:
+        id:
+          type: string
+        order_number:
+          type: string
+        owner_key:
+          type: string
+        user_id:
+          type: string
+        buyer_name:
+          type: string
+        buyer_email:
+          type: string
+        buyer_phone:
+          type: string
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/OrderItem"
+        subtotal:
+          type: integer
+          format: int64
+        service_fee:
+          type: integer
+          format: int64
+        discount:
+          type: integer
+          format: int64
+        total:
+          type: integer
+          format: int64
+        currency:
+          type: string
+          enum: [IDR]
+        promo_code:
+          type: string
+        payment_method:
+          type: string
+        payment_status:
+          type: string
+          enum: [UNPAID, PROCESSING, PAID, FAILED, CANCELLED]
+        order_status:
+          type: string
+          enum: [PENDING_PAYMENT, CONFIRMED, PAYMENT_FAILED, CANCELLED]
+        created_at:
+          type: string
+          format: date-time
+        paid_at:
+          type: string
+          format: date-time
+    OrderList:
+      type: object
+      required: [items, next_cursor]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/Order"
+        next_cursor:
+          type: string
+    OrderResult:
+      type: object
+      required: [order]
+      properties:
+        order:
+          $ref: "#/components/schemas/Order"
+        tickets:
+          type: array
+          items:
+            $ref: "#/components/schemas/Ticket"
+    Attendee:
+      type: object
+      required: [id, order_id, ticket_id, full_name, email, check_in_status]
+      properties:
+        id:
+          type: string
+        order_id:
+          type: string
+        ticket_id:
+          type: string
+        full_name:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        check_in_status:
+          type: string
+          enum: [NOT_CHECKED_IN, CHECKED_IN]
+        checked_in_at:
+          type: string
+          format: date-time
+    Ticket:
+      type: object
+      required: [id, ticket_code, order_id, event_id, ticket_type_id, attendee_id, status, issued_at]
+      properties:
+        id:
+          type: string
+        ticket_code:
+          type: string
+        order_id:
+          type: string
+        event_id:
+          type: string
+        ticket_type_id:
+          type: string
+        attendee_id:
+          type: string
+        seat_id:
+          type: string
+        status:
+          type: string
+          enum: [VALID, USED, CANCELLED, EXPIRED]
+        issued_at:
+          type: string
+          format: date-time
+        checked_in_at:
+          type: string
+          format: date-time
+        qr_token:
+          type: string
+    TicketList:
+      type: object
+      required: [items, next_cursor]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/Ticket"
+        next_cursor:
+          type: string
+    Notification:
+      type: object
+      required: [id, type, title, message, created_at]
+      properties:
+        id:
+          type: string
+        user_id:
+          type: string
+        type:
+          type: string
+          enum: [ORDER, TICKET, EVENT, SYSTEM]
+        title:
+          type: string
+        message:
+          type: string
+        read_at:
+          type: string
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+        target_url:
+          type: string
+    Review:
+      type: object
+      required: [id, event_id, author_name, rating, comment, created_at]
+      properties:
+        id:
+          type: string
+        event_id:
+          type: string
+        user_id:
+          type: string
+        author_name:
+          type: string
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+        comment:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+    ReviewCreate:
+      type: object
+      required: [rating, comment]
+      properties:
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+        comment:
+          type: string
+    AnalyticsSummary:
+      type: object
+      properties:
+        total_events:
+          type: integer
+        active_events:
+          type: integer
+        tickets_sold:
+          type: integer
+        revenue:
+          type: integer
+          format: int64
+        attendees:
+          type: integer
+        checked_in:
+          type: integer
+        confirmed_orders:
+          type: integer
+    AnalyticsEvent:
+      type: object
+      properties:
+        event_id:
+          type: string
+        title:
+          type: string
+        status:
+          type: string
+        start_at:
+          type: string
+          format: date-time
+        tickets_sold:
+          type: integer
+        revenue:
+          type: integer
+          format: int64
+        attendees:
+          type: integer
+        checked_in:
+          type: integer
+    AnalyticsReport:
+      type: object
+      required: [summary, events]
+      properties:
+        summary:
+          $ref: "#/components/schemas/AnalyticsSummary"
+        events:
+          type: array
+          items:
+            $ref: "#/components/schemas/AnalyticsEvent"
+    OrganizerSettings:
+      type: object
+      required: [display_name]
+      properties:
+        display_name:
+          type: string
+        description:
+          type: string
+        logo:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        website:
+          type: string
+        instagram:
+          type: string
+        tiktok:
+          type: string
+        order_updates:
+          type: boolean
+        event_reminders:
+          type: boolean
+        newsletter:
+          type: boolean
+        payout_status:
+          type: string
+        payout_bank:
+          type: string
+        payout_account:
+          type: string
+        updated_at:
+          type: string
+          format: date-time
+    OrganizerSettingsUpdate:
+      type: object
+      properties:
+        display_name:
+          type: string
+        description:
+          type: string
+        logo:
+          type: string
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+        website:
+          type: string
+        instagram:
+          type: string
+        tiktok:
+          type: string
+        order_updates:
+          type: boolean
+        event_reminders:
+          type: boolean
+        newsletter:
+          type: boolean
+    AttendeeList:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/Attendee"
+        next_cursor:
+          type: string
+    OrganizerEventSummary:
+      type: object
+      required: [id, title, slug, status, start_at, timezone, ticket_types]
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        slug:
+          type: string
+        status:
+          type: string
+          enum: [DRAFT, PUBLISHED, PAUSED, ENDED, CANCELLED]
+        start_at:
+          type: string
+          format: date-time
+        timezone:
+          type: string
+        ticket_types:
+          type: array
+          items:
+            $ref: "#/components/schemas/TicketType"
+    OrganizerEventCreate:
+      type: object
+      required: [title, category_id, venue_id, start_at, end_at, timezone, ticketing_mode, description, cover_image, status, base_price]
+      properties:
+        title:
+          type: string
+        category_id:
+          type: string
+        venue_id:
+          type: string
+        start_at:
+          type: string
+          format: date-time
+        end_at:
+          type: string
+          format: date-time
+        timezone:
+          type: string
+        ticketing_mode:
+          type: string
+          enum: [GENERAL_ADMISSION, RESERVED_SEATING, HYBRID]
+        description:
+          type: string
+        cover_image:
+          type: string
+        status:
+          type: string
+          enum: [DRAFT, PUBLISHED, PAUSED, ENDED, CANCELLED]
+        base_price:
+          type: integer
+          format: int64
+        subcategory:
+          type: string
+        gallery:
+          type: array
+          items:
+            type: string
+        highlights:
+          type: array
+          items:
+            type: string
+        schedule:
+          type: array
+          items:
+            type: object
+            properties:
+              time:
+                type: string
+              title:
+                type: string
+              description:
+                type: string
+        terms:
+          type: array
+          items:
+            type: string
+        age_note:
+          type: string
+        accessibility_note:
+          type: string
+        ticket_types:
+          type: array
+          items:
+            type: object
+            required: [id, name, price, quota]
+            properties:
+              id:
+                type: string
+              name:
+                type: string
+              description:
+                type: string
+              price:
+                type: integer
+                format: int64
+              quota:
+                type: integer
+              min_per_order:
+                type: integer
+              max_per_order:
+                type: integer
+              sales_start_at:
+                type: string
+                format: date-time
+              sales_end_at:
+                type: string
+                format: date-time
+              benefits:
+                type: array
+                items:
+                  type: string
+              status:
+                type: string
+                enum: [ACTIVE, INACTIVE, SOLD_OUT]
+              kind:
+                type: string
+                enum: [GENERAL_ADMISSION, SEATED]
+              tier_key:
+                type: string
+    OrganizerEventUpdate:
+      allOf:
+        - $ref: "#/components/schemas/OrganizerEventCreate"
+        - type: object
+          properties:
+            status:
+              type: string
+              enum: [DRAFT, PUBLISHED, PAUSED, ENDED, CANCELLED]
+    UploadRequest:
+      type: object
+      required: [content_type, size]
+      properties:
+        content_type:
+          type: string
+          enum: [image/jpeg, image/png, image/webp]
+        size:
+          type: integer
+          minimum: 1
+          maximum: 5242880
+    UploadResponse:
+      type: object
+      required: [key, upload_url, public_url]
+      properties:
+        key:
+          type: string
+        upload_url:
+          type: string
+        public_url:
+          type: string
+    CheckInRequest:
+      type: object
+      required: [token]
+      properties:
+        token:
+          type: string
+          example: TKT-01J0000000000000000000000
+    CheckInResponse:
+      type: object
+      required: [ok, ticket_id, status]
+      properties:
+        ok:
+          type: boolean
+        ticket_id:
+          type: string
+        status:
+          type: string
+          enum: [VALID, USED]
+        checked_in_at:
+          type: string
+          format: date-time
+    ProfileUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+paths:
+  /health/live:
+    get:
+      summary: HealthLive
+      tags: [Health]
+      operationId: healthLive
+      responses:
+        "200":
+          description: Process is alive
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [ok]
+  /health/ready:
+    get:
+      summary: HealthReady
+      tags: [Health]
+      operationId: healthReady
+      responses:
+        "200":
+          description: Dependencies are ready
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [ok]
+        "503":
+          description: One or more dependencies are unavailable
+  /auth/login:
+    post:
+      summary: Login
+      tags: [Auth]
+      operationId: login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "401":
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+  /auth/register:
+    post:
+      summary: Register
+      tags: [Auth]
+      operationId: register
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterRequest"
+      responses:
+        "201":
+          description: Account created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "400":
+          description: Invalid registration
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+  /auth/refresh:
+    post:
+      summary: Refresh
+      tags: [Auth]
+      operationId: refresh
+      responses:
+        "200":
+          description: Rotated session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "401":
+          description: Invalid refresh session
+  /auth/guest:
+    post:
+      summary: Create or resume guest principal
+      tags: [Auth]
+      operationId: createGuest
+      responses:
+        "200":
+          description: Guest principal is ready
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [guest]
+                properties:
+                  guest:
+                    type: boolean
+  /auth/logout:
+    post:
+      summary: Logout
+      tags: [Auth]
+      operationId: logout
+      security:
+        - accessCookie: []
+      responses:
+        "204":
+          description: Logged out
+  /auth/logout-all:
+    post:
+      summary: LogoutAll
+      tags: [Auth]
+      operationId: logoutAll
+      security:
+        - accessCookie: []
+      responses:
+        "204":
+          description: All sessions revoked
+  /auth/me:
+    get:
+      summary: Me
+      tags: [Auth]
+      operationId: me
+      security:
+        - accessCookie: []
+      responses:
+        "200":
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "401":
+          description: Not authenticated
+  /categories:
+    get:
+      summary: ListCategories
+      tags: [Catalog]
+      operationId: listCategories
+      responses:
+        "200":
+          description: Categories
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Category"
+  /organizers:
+    get:
+      summary: List organizers
+      tags: [Catalog]
+      operationId: listOrganizers
+      responses:
+        "200":
+          description: Organizers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Organizer"
+  /events:
+    get:
+      summary: ListEvents
+      tags: [Catalog]
+      operationId: listEvents
+      parameters:
+        - name: q
+          in: query
+          schema:
+            type: string
+        - name: category
+          in: query
+          schema:
+            type: string
+        - name: city
+          in: query
+          schema:
+            type: string
+        - name: date
+          in: query
+          schema:
+            type: string
+            enum: [week, month, next]
+        - name: price
+          in: query
+          schema:
+            type: string
+            enum: [under200, 200to500, 500to1000, above1000]
+        - name: mode
+          in: query
+          schema:
+            type: string
+            enum: [GENERAL_ADMISSION, RESERVED_SEATING, HYBRID]
+        - name: availability
+          in: query
+          schema:
+            type: string
+            enum: [available]
+        - name: sort
+          in: query
+          schema:
+            type: string
+            enum: [recommended, soonest, newest, price-low, price-high, popularity]
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Event list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EventList"
+  /events/{slug}:
+    get:
+      summary: GetEventBySlug
+      tags: [Catalog]
+      operationId: getEventBySlug
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Event detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EventDetail"
+        "404":
+          description: Event not found
+  /events/{eventId}/ticket-types:
+    get:
+      summary: ListTicketTypes
+      tags: [Catalog]
+      operationId: listTicketTypes
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Ticket types and availability
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TicketTypeList"
+  /venues:
+    get:
+      summary: ListVenues
+      tags: [Catalog]
+      operationId: listVenues
+      responses:
+        "200":
+          description: Venues
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Venue"
+  /venues/{venueId}:
+    get:
+      summary: GetVenue
+      tags: [Catalog]
+      operationId: getVenue
+      parameters:
+        - name: venueId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Venue
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Venue"
+        "404":
+          description: Venue not found
+  /cart:
+    get:
+      summary: GetCart
+      tags: [Cart]
+      operationId: getCart
+      security:
+        - accessCookie: []
+      responses:
+        "200":
+          description: Current cart
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Cart"
+    delete:
+      summary: ClearCart
+      tags: [Cart]
+      operationId: clearCart
+      security:
+        - accessCookie: []
+      responses:
+        "204":
+          description: Cart cleared
+  /cart/items:
+    post:
+      summary: AddCartItem
+      tags: [Cart]
+      operationId: addCartItem
+      security:
+        - accessCookie: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AddCartItemRequest"
+      responses:
+        "200":
+          description: Updated cart
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Cart"
+        "409":
+          description: Inventory conflict
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+  /cart/items/{itemId}:
+    patch:
+      summary: UpdateCartItem
+      tags: [Cart]
+      operationId: updateCartItem
+      security:
+        - accessCookie: []
+      parameters:
+        - name: itemId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateCartItemRequest"
+      responses:
+        "200":
+          description: Updated cart
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Cart"
+    delete:
+      summary: RemoveCartItem
+      tags: [Cart]
+      operationId: removeCartItem
+      security:
+        - accessCookie: []
+      parameters:
+        - name: itemId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Updated cart
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Cart"
+  /cart/promo:
+    post:
+      summary: ApplyPromo
+      tags: [Cart]
+      operationId: applyPromo
+      security:
+        - accessCookie: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PromoRequest"
+      responses:
+        "200":
+          description: Promo applied
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Cart"
+        "422":
+          description: Invalid promo
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+    delete:
+      summary: RemovePromo
+      tags: [Cart]
+      operationId: removePromo
+      security:
+        - accessCookie: []
+      responses:
+        "200":
+          description: Promo removed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Cart"
+  /checkout/quote:
+    post:
+      summary: QuoteCheckout
+      tags: [Checkout]
+      operationId: quoteCheckout
+      security:
+        - accessCookie: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/QuoteRequest"
+      responses:
+        "200":
+          description: Authoritative quote
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QuoteResponse"
+        "409":
+          description: Inventory conflict
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+  /checkout/reservations:
+    post:
+      summary: CreateReservation
+      tags: [Checkout]
+      operationId: createReservation
+      security:
+        - accessCookie: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReservationRequest"
+      responses:
+        "201":
+          description: Reservation created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReservationResponse"
+        "409":
+          description: Inventory conflict
+  /checkout/reservations/{id}:
+    get:
+      summary: GetReservation
+      tags: [Checkout]
+      operationId: getReservation
+      security:
+        - accessCookie: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Reservation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReservationResponse"
+    delete:
+      summary: ReleaseReservation
+      tags: [Checkout]
+      operationId: releaseReservation
+      security:
+        - accessCookie: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Reservation released
+  /checkout/orders:
+    post:
+      summary: CreateOrder
+      tags: [Checkout]
+      operationId: createOrder
+      security:
+        - accessCookie: []
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateOrderRequest"
+      responses:
+        "201":
+          description: Order created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrderResult"
+        "409":
+          description: Inventory or idempotency conflict
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+  /orders:
+    get:
+      summary: ListOrders
+      tags: [Orders]
+      operationId: listOrders
+      security:
+        - accessCookie: []
+      parameters:
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Orders
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrderList"
+  /orders/{id}:
+    get:
+      summary: GetOrder
+      tags: [Orders]
+      operationId: getOrder
+      security:
+        - accessCookie: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Order
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Order"
+        "404":
+          description: Order not found
+  /orders/{id}/tickets:
+    get:
+      summary: ListOrderTickets
+      tags: [Orders]
+      operationId: listOrderTickets
+      security:
+        - accessCookie: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Tickets for order
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TicketList"
+  /tickets:
+    get:
+      summary: ListTickets
+      tags: [Tickets]
+      operationId: listTickets
+      security:
+        - accessCookie: []
+      parameters:
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Ticket wallet
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TicketList"
+  /tickets/{id}:
+    get:
+      summary: GetTicket
+      tags: [Tickets]
+      operationId: getTicket
+      security:
+        - accessCookie: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Ticket
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Ticket"
+        "404":
+          description: Ticket not found
+  /organizer/events:
+    get:
+      summary: ListOrganizerEvents
+      tags: [Organizer]
+      operationId: listOrganizerEvents
+      security:
+        - accessCookie: []
+      responses:
+        "200":
+          description: Organizer events
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/EventDetail"
+    post:
+      summary: CreateOrganizerEvent
+      tags: [Organizer]
+      operationId: createOrganizerEvent
+      security:
+        - accessCookie: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OrganizerEventCreate"
+      responses:
+        "201":
+          description: Event created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EventDetail"
+  /organizer/events/{eventId}:
+    get:
+      summary: GetOrganizerEvent
+      tags: [Organizer]
+      operationId: getOrganizerEvent
+      security:
+        - accessCookie: []
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Organizer event
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EventDetail"
+        "404":
+          description: Event not found
+    patch:
+      summary: UpdateOrganizerEvent
+      tags: [Organizer]
+      operationId: updateOrganizerEvent
+      security:
+        - accessCookie: []
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OrganizerEventUpdate"
+      responses:
+        "200":
+          description: Event updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EventDetail"
+    delete:
+      summary: DeleteOrganizerEvent
+      tags: [Organizer]
+      operationId: deleteOrganizerEvent
+      security:
+        - accessCookie: []
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Event deleted
+        "409":
+          description: Event has orders; cancel it instead
+  /organizer/uploads:
+    post:
+      summary: Create a presigned image upload
+      tags: [Organizer]
+      operationId: createUpload
+      security:
+        - accessCookie: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UploadRequest"
+      responses:
+        "200":
+          description: Presigned upload URL
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UploadResponse"
+        "400":
+          description: Invalid image metadata
+    delete:
+      summary: Delete an uploaded image
+      tags: [Organizer]
+      operationId: deleteUpload
+      security:
+        - accessCookie: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [key]
+              properties:
+                key:
+                  type: string
+      responses:
+        "204":
+          description: Deleted
+  /organizer/events/{eventId}/check-in:
+    post:
+      summary: CheckInTicket
+      tags: [Organizer, Tickets]
+      operationId: checkInTicket
+      security:
+        - accessCookie: []
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CheckInRequest"
+      responses:
+        "200":
+          description: Check-in result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CheckInResponse"
+        "409":
+          description: Ticket already used
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+  /account/profile:
+    patch:
+      summary: UpdateProfile
+      tags: [Account]
+      operationId: updateProfile
+      security:
+        - accessCookie: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProfileUpdate"
+      responses:
+        "200":
+          description: Profile updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+  /account/notifications:
+    get:
+      summary: ListNotifications
+      tags: [Account]
+      operationId: listNotifications
+      security:
+        - accessCookie: []
+      responses:
+        "200":
+          description: Notifications
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Notification"
+  /account/wishlist:
+    get:
+      summary: ListWishlist
+      tags: [Account]
+      operationId: listWishlist
+      security:
+        - accessCookie: []
+      responses:
+        "200":
+          description: Wishlist event IDs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+    delete:
+      summary: ClearWishlist
+      tags: [Account]
+      operationId: clearWishlist
+      security:
+        - accessCookie: []
+      responses:
+        "204":
+          description: Cleared
+    post:
+      summary: AddWishlist
+      tags: [Account]
+      operationId: addWishlist
+      security:
+        - accessCookie: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [event_id]
+              properties:
+                event_id:
+                  type: string
+      responses:
+        "204":
+          description: Added
+  /account/wishlist/{eventId}:
+    delete:
+      summary: RemoveWishlist
+      tags: [Account]
+      operationId: removeWishlist
+      security:
+        - accessCookie: []
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Removed
+  /events/{eventId}/reviews:
+    get:
+      summary: ListReviews
+      tags: [Account]
+      operationId: listReviews
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: sort
+          in: query
+          schema:
+            type: string
+            enum: [newest, highest, lowest]
+        - name: rating
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 5
+      responses:
+        "200":
+          description: Reviews
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Review"
+    post:
+      summary: CreateReview
+      tags: [Account]
+      operationId: createReview
+      security:
+        - accessCookie: []
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReviewCreate"
+      responses:
+        "201":
+          description: Review created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Review"
+  /account/notifications/{notificationId}/read:
+    post:
+      summary: MarkNotificationRead
+      tags: [Account]
+      operationId: markNotificationRead
+      security:
+        - accessCookie: []
+      parameters:
+        - name: notificationId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Marked read
+        "404":
+          description: Notification not found
+  /account/notifications/read-all:
+    post:
+      summary: MarkAllNotificationsRead
+      tags: [Account]
+      operationId: markAllNotificationsRead
+      security:
+        - accessCookie: []
+      responses:
+        "204":
+          description: All marked read
+  /organizer/orders:
+    get:
+      summary: ListOrganizerOrders
+      tags: [Organizer]
+      operationId: listOrganizerOrders
+      security:
+        - accessCookie: []
+      responses:
+        "200":
+          description: Organizer orders
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrderList"
+  /organizer/attendees:
+    get:
+      summary: ListOrganizerAttendees
+      tags: [Organizer]
+      operationId: listOrganizerAttendees
+      security:
+        - accessCookie: []
+      responses:
+        "200":
+          description: Organizer attendees
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AttendeeList"
+  /organizer/tickets:
+    get:
+      summary: ListOrganizerTickets
+      tags: [Organizer]
+      operationId: listOrganizerTickets
+      security:
+        - accessCookie: []
+      responses:
+        "200":
+          description: Organizer tickets
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TicketList"
+  /events/{eventId}/seats:
+    get:
+      summary: ListClaimedSeats
+      tags: [Inventory]
+      operationId: listClaimedSeats
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Claimed and sold seat IDs
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [claimed]
+                properties:
+                  claimed:
+                    type: array
+                    items:
+                      type: string
+  /organizer/analytics:
+    get:
+      summary: GetOrganizerAnalytics
+      tags: [Organizer]
+      operationId: getOrganizerAnalytics
+      security:
+        - accessCookie: []
+      parameters:
+        - name: event_id
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Analytics report
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnalyticsReport"
+  /organizer/analytics/export.csv:
+    get:
+      summary: ExportOrganizerAnalytics
+      tags: [Organizer]
+      operationId: exportOrganizerAnalytics
+      security:
+        - accessCookie: []
+      parameters:
+        - name: event_id
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: CSV export
+          content:
+            text/csv:
+              schema:
+                type: string
+  /account/attendees:
+    get:
+      summary: ListMyAttendees
+      tags: [Account]
+      operationId: listMyAttendees
+      security:
+        - accessCookie: []
+      responses:
+        "200":
+          description: Attendees for the current principal
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AttendeeList"
+  /organizer/settings:
+    get:
+      summary: GetOrganizerSettings
+      tags: [Organizer]
+      operationId: getOrganizerSettings
+      security:
+        - accessCookie: []
+      responses:
+        "200":
+          description: Organizer settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrganizerSettings"
+    patch:
+      summary: UpdateOrganizerSettings
+      tags: [Organizer]
+      operationId: updateOrganizerSettings
+      security:
+        - accessCookie: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OrganizerSettingsUpdate"
+      responses:
+        "200":
+          description: Organizer settings updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrganizerSettings"

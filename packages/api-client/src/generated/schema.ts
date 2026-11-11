@@ -660,6 +660,92 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/account/notifications/{notificationId}/read": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** MarkNotificationRead */
+        post: operations["markNotificationRead"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/account/notifications/read-all": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** MarkAllNotificationsRead */
+        post: operations["markAllNotificationsRead"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/organizer/analytics": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** GetOrganizerAnalytics */
+        get: operations["getOrganizerAnalytics"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/organizer/analytics/export.csv": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** ExportOrganizerAnalytics */
+        get: operations["exportOrganizerAnalytics"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/organizer/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** GetOrganizerSettings */
+        get: operations["getOrganizerSettings"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** UpdateOrganizerSettings */
+        patch: operations["updateOrganizerSettings"];
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1045,6 +1131,64 @@ export interface components {
         ReviewCreate: {
             rating: number;
             comment: string;
+        };
+        AnalyticsSummary: {
+            total_events?: number;
+            active_events?: number;
+            tickets_sold?: number;
+            /** Format: int64 */
+            revenue?: number;
+            attendees?: number;
+            checked_in?: number;
+            confirmed_orders?: number;
+        };
+        AnalyticsEvent: {
+            event_id?: string;
+            title?: string;
+            status?: string;
+            /** Format: date-time */
+            start_at?: string;
+            tickets_sold?: number;
+            /** Format: int64 */
+            revenue?: number;
+            attendees?: number;
+            checked_in?: number;
+        };
+        AnalyticsReport: {
+            summary: components["schemas"]["AnalyticsSummary"];
+            events: components["schemas"]["AnalyticsEvent"][];
+        };
+        OrganizerSettings: {
+            display_name: string;
+            description?: string;
+            logo?: string;
+            email?: string;
+            phone?: string;
+            website?: string;
+            instagram?: string;
+            tiktok?: string;
+            order_updates?: boolean;
+            event_reminders?: boolean;
+            newsletter?: boolean;
+            payout_status?: string;
+            payout_bank?: string;
+            payout_account?: string;
+            /** Format: date-time */
+            updated_at?: string;
+        };
+        OrganizerSettingsUpdate: {
+            display_name?: string;
+            description?: string;
+            logo?: string;
+            /** Format: email */
+            email?: string;
+            phone?: string;
+            website?: string;
+            instagram?: string;
+            tiktok?: string;
+            order_updates?: boolean;
+            event_reminders?: boolean;
+            newsletter?: boolean;
         };
         OrganizerEventSummary: {
             id: string;
@@ -2317,7 +2461,10 @@ export interface operations {
     };
     listReviews: {
         parameters: {
-            query?: never;
+            query?: {
+                sort?: "newest" | "highest" | "lowest";
+                rating?: number;
+            };
             header?: never;
             path: {
                 eventId: string;
@@ -2359,6 +2506,139 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Review"];
+                };
+            };
+        };
+    };
+    markNotificationRead: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                notificationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Marked read */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Notification not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    markAllNotificationsRead: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description All marked read */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    getOrganizerAnalytics: {
+        parameters: {
+            query?: {
+                event_id?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Analytics report */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AnalyticsReport"];
+                };
+            };
+        };
+    };
+    exportOrganizerAnalytics: {
+        parameters: {
+            query?: {
+                event_id?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description CSV export */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/csv": string;
+                };
+            };
+        };
+    };
+    getOrganizerSettings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Organizer settings */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrganizerSettings"];
+                };
+            };
+        };
+    };
+    updateOrganizerSettings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OrganizerSettingsUpdate"];
+            };
+        };
+        responses: {
+            /** @description Organizer settings updated */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrganizerSettings"];
                 };
             };
         };

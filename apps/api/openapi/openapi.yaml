@@ -831,6 +831,116 @@ components:
           maximum: 5
         comment:
           type: string
+    AnalyticsSummary:
+      type: object
+      properties:
+        total_events:
+          type: integer
+        active_events:
+          type: integer
+        tickets_sold:
+          type: integer
+        revenue:
+          type: integer
+          format: int64
+        attendees:
+          type: integer
+        checked_in:
+          type: integer
+        confirmed_orders:
+          type: integer
+    AnalyticsEvent:
+      type: object
+      properties:
+        event_id:
+          type: string
+        title:
+          type: string
+        status:
+          type: string
+        start_at:
+          type: string
+          format: date-time
+        tickets_sold:
+          type: integer
+        revenue:
+          type: integer
+          format: int64
+        attendees:
+          type: integer
+        checked_in:
+          type: integer
+    AnalyticsReport:
+      type: object
+      required: [summary, events]
+      properties:
+        summary:
+          $ref: "#/components/schemas/AnalyticsSummary"
+        events:
+          type: array
+          items:
+            $ref: "#/components/schemas/AnalyticsEvent"
+    OrganizerSettings:
+      type: object
+      required: [display_name]
+      properties:
+        display_name:
+          type: string
+        description:
+          type: string
+        logo:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        website:
+          type: string
+        instagram:
+          type: string
+        tiktok:
+          type: string
+        order_updates:
+          type: boolean
+        event_reminders:
+          type: boolean
+        newsletter:
+          type: boolean
+        payout_status:
+          type: string
+        payout_bank:
+          type: string
+        payout_account:
+          type: string
+        updated_at:
+          type: string
+          format: date-time
+    OrganizerSettingsUpdate:
+      type: object
+      properties:
+        display_name:
+          type: string
+        description:
+          type: string
+        logo:
+          type: string
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+        website:
+          type: string
+        instagram:
+          type: string
+        tiktok:
+          type: string
+        order_updates:
+          type: boolean
+        event_reminders:
+          type: boolean
+        newsletter:
+          type: boolean
     OrganizerEventSummary:
       type: object
       required: [id, title, slug, status, start_at, timezone, ticket_types]
@@ -1924,6 +2034,17 @@ paths:
           required: true
           schema:
             type: string
+        - name: sort
+          in: query
+          schema:
+            type: string
+            enum: [newest, highest, lowest]
+        - name: rating
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 5
       responses:
         "200":
           description: Reviews
@@ -1958,3 +2079,102 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Review"
+  /account/notifications/{notificationId}/read:
+    post:
+      summary: MarkNotificationRead
+      tags: [Account]
+      operationId: markNotificationRead
+      security:
+        - accessCookie: []
+      parameters:
+        - name: notificationId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Marked read
+        "404":
+          description: Notification not found
+  /account/notifications/read-all:
+    post:
+      summary: MarkAllNotificationsRead
+      tags: [Account]
+      operationId: markAllNotificationsRead
+      security:
+        - accessCookie: []
+      responses:
+        "204":
+          description: All marked read
+  /organizer/analytics:
+    get:
+      summary: GetOrganizerAnalytics
+      tags: [Organizer]
+      operationId: getOrganizerAnalytics
+      security:
+        - accessCookie: []
+      parameters:
+        - name: event_id
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Analytics report
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnalyticsReport"
+  /organizer/analytics/export.csv:
+    get:
+      summary: ExportOrganizerAnalytics
+      tags: [Organizer]
+      operationId: exportOrganizerAnalytics
+      security:
+        - accessCookie: []
+      parameters:
+        - name: event_id
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: CSV export
+          content:
+            text/csv:
+              schema:
+                type: string
+  /organizer/settings:
+    get:
+      summary: GetOrganizerSettings
+      tags: [Organizer]
+      operationId: getOrganizerSettings
+      security:
+        - accessCookie: []
+      responses:
+        "200":
+          description: Organizer settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrganizerSettings"
+    patch:
+      summary: UpdateOrganizerSettings
+      tags: [Organizer]
+      operationId: updateOrganizerSettings
+      security:
+        - accessCookie: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OrganizerSettingsUpdate"
+      responses:
+        "200":
+          description: Organizer settings updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrganizerSettings"

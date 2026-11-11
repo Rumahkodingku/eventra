@@ -34,6 +34,8 @@ Tickets/check-in: `GET /tickets`, `/tickets/{id}`; organizer event check-in crea
 
 Account: profile, wishlist, notifications, reviews.
 
+Guest wishlist is local-only in the browser. It is temporary and is not merged into the server wishlist on login; only an authenticated user's `/account/wishlist` is persisted.
+
 Final schemas, permission requirements, status codes and examples must be specified in OpenAPI before endpoint implementation.
 
 ## Error envelope

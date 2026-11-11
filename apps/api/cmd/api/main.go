@@ -9,12 +9,17 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/eventra/eventra/apps/api/internal/modules/analytics"
 	"github.com/eventra/eventra/apps/api/internal/modules/cart"
 	"github.com/eventra/eventra/apps/api/internal/modules/catalog"
 	"github.com/eventra/eventra/apps/api/internal/modules/identity"
 	"github.com/eventra/eventra/apps/api/internal/modules/inventory"
+	"github.com/eventra/eventra/apps/api/internal/modules/notification"
 	"github.com/eventra/eventra/apps/api/internal/modules/order"
+	"github.com/eventra/eventra/apps/api/internal/modules/organization"
+	"github.com/eventra/eventra/apps/api/internal/modules/review"
 	"github.com/eventra/eventra/apps/api/internal/modules/ticket"
+	"github.com/eventra/eventra/apps/api/internal/modules/wishlist"
 	"github.com/eventra/eventra/apps/api/internal/platform/cache"
 	"github.com/eventra/eventra/apps/api/internal/platform/config"
 	"github.com/eventra/eventra/apps/api/internal/platform/database"
@@ -80,7 +85,13 @@ func main() {
 	cartHandler := cart.NewHandler(cart.NewService(db, inventoryService))
 	ticketService := ticket.NewService(db)
 	ticketHandler := ticket.NewHandler(ticketService)
-	orderHandler := order.NewHandler(order.NewService(db, inventoryService, ticketService), cfg.MockPaymentSecret)
+	notificationService := notification.NewService(db)
+	notificationHandler := notification.NewHandler(notificationService)
+	orderHandler := order.NewHandler(order.NewService(db, inventoryService, ticketService, notificationService), cfg.MockPaymentSecret)
+	reviewHandler := review.NewHandler(review.NewService(db))
+	wishlistHandler := wishlist.NewHandler(wishlist.NewService(db))
+	analyticsHandler := analytics.NewHandler(analytics.NewService(db))
+	organizationHandler := organization.NewHandler(organization.NewService(db))
 
 	server := httpserver.NewServer(
 		httpserver.ServerConfig{HTTPAddr: cfg.HTTPAddr, WebOrigin: cfg.WebOrigin},
@@ -89,6 +100,9 @@ func main() {
 			DB: db, Redis: redisClient, Auth: authHandler,
 			Catalog: catalogHandler, Inventory: inventoryHandler, Cart: cartHandler,
 			Order: orderHandler, Ticket: ticketHandler,
+			Notification: notificationHandler, Review: reviewHandler,
+			Wishlist: wishlistHandler, Analytics: analyticsHandler,
+			Organization: organizationHandler,
 		},
 	)
 

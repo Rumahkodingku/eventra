@@ -13,23 +13,33 @@ import (
 	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 
+	"github.com/eventra/eventra/apps/api/internal/modules/analytics"
 	"github.com/eventra/eventra/apps/api/internal/modules/cart"
 	"github.com/eventra/eventra/apps/api/internal/modules/catalog"
 	"github.com/eventra/eventra/apps/api/internal/modules/identity"
 	"github.com/eventra/eventra/apps/api/internal/modules/inventory"
+	"github.com/eventra/eventra/apps/api/internal/modules/notification"
 	"github.com/eventra/eventra/apps/api/internal/modules/order"
+	"github.com/eventra/eventra/apps/api/internal/modules/organization"
+	"github.com/eventra/eventra/apps/api/internal/modules/review"
 	"github.com/eventra/eventra/apps/api/internal/modules/ticket"
+	"github.com/eventra/eventra/apps/api/internal/modules/wishlist"
 )
 
 type Dependencies struct {
-	DB        *gorm.DB
-	Redis     *redis.Client
-	Auth      *identity.Handler
-	Catalog   *catalog.Handler
-	Inventory *inventory.Handler
-	Cart      *cart.Handler
-	Order     *order.Handler
-	Ticket    *ticket.Handler
+	DB           *gorm.DB
+	Redis        *redis.Client
+	Auth         *identity.Handler
+	Catalog      *catalog.Handler
+	Inventory    *inventory.Handler
+	Cart         *cart.Handler
+	Order        *order.Handler
+	Ticket       *ticket.Handler
+	Notification *notification.Handler
+	Review       *review.Handler
+	Wishlist     *wishlist.Handler
+	Analytics    *analytics.Handler
+	Organization *organization.Handler
 }
 
 func NewRouter(cfg Config, log *slog.Logger, deps Dependencies) *gin.Engine {
@@ -60,6 +70,21 @@ func NewRouter(cfg Config, log *slog.Logger, deps Dependencies) *gin.Engine {
 	}
 	if deps.Ticket != nil && deps.Auth != nil {
 		deps.Ticket.RegisterRoutes(v1, deps.Auth)
+	}
+	if deps.Notification != nil && deps.Auth != nil {
+		deps.Notification.RegisterRoutes(v1, deps.Auth)
+	}
+	if deps.Review != nil && deps.Auth != nil {
+		deps.Review.RegisterRoutes(v1, deps.Auth)
+	}
+	if deps.Wishlist != nil && deps.Auth != nil {
+		deps.Wishlist.RegisterRoutes(v1, deps.Auth)
+	}
+	if deps.Analytics != nil && deps.Auth != nil {
+		deps.Analytics.RegisterRoutes(v1, deps.Auth)
+	}
+	if deps.Organization != nil && deps.Auth != nil {
+		deps.Organization.RegisterRoutes(v1, deps.Auth)
 	}
 	v1.GET("/health/live", live)
 	v1.GET("/health/ready", ready(deps))

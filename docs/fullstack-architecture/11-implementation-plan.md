@@ -2142,47 +2142,47 @@ Phase 10.
 
 #### Task 11.1 — Notifications
 
-- [ ] Create notifications table.
-- [ ] Create notifications for order/payment/ticket events.
-- [ ] Enforce user ownership.
-- [ ] Mark read/all read.
-- [ ] Defer email adapter.
+- [x] Create notifications table.
+- [x] Create notifications for order/payment/ticket events.
+- [x] Enforce user ownership.
+- [x] Mark read/all read.
+- [x] Defer email adapter.
 
 **Verification:** ownership and read-state tests.
 
 #### Task 11.2 — Reviews
 
-- [ ] Create reviews table.
-- [ ] Enforce eligibility from valid/used ticket.
-- [ ] Add list/filter/sort and create.
-- [ ] Prevent duplicate review per user/event if required.
+- [x] Create reviews table.
+- [x] Enforce eligibility from valid/used ticket.
+- [x] Add list/filter/sort and create.
+- [x] Prevent duplicate review per user/event if required.
 
 **Verification:** eligibility tests.
 
 #### Task 11.3 — Wishlist
 
-- [ ] Create `wishlist_items`.
-- [ ] Add list/add/remove.
-- [ ] Scope to authenticated user.
-- [ ] Merge guest local wishlist on login if retained.
-- [ ] Document that guest local wishlist is temporary.
+- [x] Create `wishlist_items`.
+- [x] Add list/add/remove.
+- [x] Scope to authenticated user.
+- [x] Merge guest local wishlist on login if retained.
+- [x] Document that guest local wishlist is temporary.
 
 **Verification:** ownership and merge tests.
 
 #### Task 11.4 — Analytics and CSV
 
-- [ ] Compute analytics from persisted orders/tickets/attendees.
-- [ ] Scope by organization and event.
-- [ ] Add authorized CSV export.
-- [ ] Do not expose another organization's data.
+- [x] Compute analytics from persisted orders/tickets/attendees.
+- [x] Scope by organization and event.
+- [x] Add authorized CSV export.
+- [x] Do not expose another organization's data.
 
 **Verification:** analytics scope and CSV auth tests.
 
 #### Task 11.5 — Organizer settings
 
-- [ ] Persist organization profile/branding/notification preferences.
-- [ ] Keep payout fields masked/sample-only.
-- [ ] Enforce ownership.
+- [x] Persist organization profile/branding/notification preferences.
+- [x] Keep payout fields masked/sample-only.
+- [x] Enforce ownership.
 
 **Verification:** settings ownership tests.
 

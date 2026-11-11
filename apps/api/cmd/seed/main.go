@@ -72,6 +72,16 @@ func seed(ctx context.Context, db *gorm.DB) error {
 	if err != nil {
 		return err
 	}
+	if err := db.WithContext(ctx).Exec(`INSERT INTO organization_settings
+		(organization_id, display_name, description, email, website, instagram, tiktok, order_updates, event_reminders, newsletter)
+		VALUES (?, ?, ?, ?, ?, ?, ?, TRUE, TRUE, FALSE)
+		ON DUPLICATE KEY UPDATE organization_id = organization_id`,
+		org.ID, "Rumah Kodingku Live",
+		"Rumah produksi pengalaman live yang menghubungkan musisi, komunitas, dan penonton di seluruh Indonesia.",
+		"organizer@demo.local", "https://example.com",
+		"https://instagram.com/example", "https://tiktok.com/@example").Error; err != nil {
+		return err
+	}
 
 	roleIDs := map[string]string{}
 	for roleName, permissionNames := range rolePermissions {

@@ -15,6 +15,7 @@ import (
 
 	"github.com/eventra/eventra/apps/api/internal/modules/catalog"
 	"github.com/eventra/eventra/apps/api/internal/modules/inventory"
+	"github.com/eventra/eventra/apps/api/internal/modules/notification"
 	"github.com/eventra/eventra/apps/api/internal/modules/ticket"
 )
 
@@ -26,10 +27,11 @@ var (
 )
 
 type Service struct {
-	db        *gorm.DB
-	inventory *inventory.Service
-	ticket    *ticket.Service
-	now       func() time.Time
+	db           *gorm.DB
+	inventory    *inventory.Service
+	ticket       *ticket.Service
+	notification *notification.Service
+	now          func() time.Time
 }
 
 type Buyer struct {
@@ -53,8 +55,8 @@ type CreateInput struct {
 	Attendees       []AttendeeInput `json:"attendees"`
 }
 
-func NewService(db *gorm.DB, inventoryService *inventory.Service, ticketService *ticket.Service) *Service {
-	return &Service{db: db, inventory: inventoryService, ticket: ticketService, now: time.Now}
+func NewService(db *gorm.DB, inventoryService *inventory.Service, ticketService *ticket.Service, notificationService *notification.Service) *Service {
+	return &Service{db: db, inventory: inventoryService, ticket: ticketService, notification: notificationService, now: time.Now}
 }
 
 func (s *Service) Create(ctx context.Context, principal, idempotencyKey string, input CreateInput) (Order, error) {
@@ -86,6 +88,7 @@ func (s *Service) Create(ctx context.Context, principal, idempotencyKey string, 
 	orderNumber := "EVT-" + s.now().Format("2006") + "-" + strings.ToUpper(ulid.Make().String()[20:])
 	order := Order{
 		ID: orderID, OrderNumber: orderNumber, PrincipalKey: principal,
+		UserID:        userIDFromPrincipal(principal),
 		ReservationID: input.ReservationID,
 		BuyerName:     input.Buyer.Name, BuyerEmail: input.Buyer.Email, BuyerPhone: input.Buyer.Phone,
 		Currency: "IDR", PaymentMethod: input.PaymentMethod,
@@ -224,7 +227,22 @@ func (s *Service) ProcessWebhook(ctx context.Context, provider, eventID, provide
 			}).Error; err != nil {
 				return err
 			}
-			return s.ticket.IssueTx(ctx, tx, order.ID)
+			if err := s.ticket.IssueTx(ctx, tx, order.ID); err != nil {
+				return err
+			}
+			if s.notification != nil {
+				if err := s.notification.CreateTx(ctx, tx, order.UserID, "ORDER",
+					"Pembayaran berhasil",
+					"Pesanan "+order.OrderNumber+" sudah dibayar.", "/orders/"+order.ID); err != nil {
+					return err
+				}
+				if err := s.notification.CreateTx(ctx, tx, order.UserID, "TICKET",
+					"Tiket kamu sudah terbit",
+					"Tiket untuk "+order.OrderNumber+" bisa dibuka sekarang.", "/tickets"); err != nil {
+					return err
+				}
+			}
+			return nil
 		}
 		if status == "FAILED" && order.OrderStatus == "PENDING_PAYMENT" {
 			if err := tx.Model(&Payment{}).Where("id = ?", payment.ID).Update("status", "FAILED").Error; err != nil {
@@ -236,6 +254,17 @@ func (s *Service) ProcessWebhook(ctx context.Context, provider, eventID, provide
 		}
 		return nil
 	})
+}
+
+func userIDFromPrincipal(principal string) *string {
+	if !strings.HasPrefix(principal, "user:") {
+		return nil
+	}
+	id := strings.TrimPrefix(principal, "user:")
+	if id == "" {
+		return nil
+	}
+	return &id
 }
 
 func (s *Service) List(ctx context.Context, principal string) ([]Order, error) {

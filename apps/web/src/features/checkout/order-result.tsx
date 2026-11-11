@@ -17,7 +17,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { cn } from "@/lib/cn";
 import { formatIDR } from "@/lib/currency";
 import { formatDateTime } from "@/lib/dates";
-import { useOrderStore } from "@/stores/orders";
+import { useOrderStore } from "@/services/hooks/use-order-store";
 import { usePreferencesStore } from "@/stores/preferences";
 
 export function OrderResult() {

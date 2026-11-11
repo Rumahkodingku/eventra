@@ -14,15 +14,16 @@ import { Field } from "@/components/ui/field";
 import { Input, Select } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
-import { venues } from "@/data/seed/catalog";
 import { useHydrated } from "@/hooks/use-hydrated";
 import { cn } from "@/lib/cn";
 import { resetDemoData } from "@/lib/storage";
+import { useCatalog } from "@/services/hooks/use-catalog";
+import { useSessionStore } from "@/services/hooks/use-session-store";
 import { usePreferencesStore } from "@/stores/preferences";
-import { useSessionStore } from "@/stores/session";
 
 export default function SettingsPage() {
   const t = useTranslations();
+  const { venues } = useCatalog();
   const hydrated = useHydrated();
   const user = useSessionStore((state) => state.user);
   const locale = usePreferencesStore((state) => state.locale);

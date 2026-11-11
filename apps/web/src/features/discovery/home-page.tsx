@@ -17,14 +17,14 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SectionHeading } from "@/components/ui/section-heading";
-import { categories, venues } from "@/data/seed/catalog";
 import { CategoryTile } from "@/features/discovery/category-tile";
 import { useHydrated } from "@/hooks/use-hydrated";
 import { cn } from "@/lib/cn";
 import { formatIDR, formatNumber } from "@/lib/currency";
 import { formatShortDate } from "@/lib/dates";
 import { getStartingPrice } from "@/lib/pricing";
-import { useEventStore } from "@/stores/events";
+import { useCatalog } from "@/services/hooks/use-catalog";
+import { useEventStore } from "@/services/hooks/use-event-store";
 import { usePreferencesStore } from "@/stores/preferences";
 import { useRecentStore } from "@/stores/recent";
 
@@ -62,6 +62,7 @@ function HeroSearch() {
 export function HomePage() {
   const t = useTranslations();
   const hydrated = useHydrated();
+  const { categories, venues } = useCatalog();
   const events = useEventStore((state) => state.events);
   const city = usePreferencesStore((state) => state.city);
   const setCity = usePreferencesStore((state) => state.setCity);

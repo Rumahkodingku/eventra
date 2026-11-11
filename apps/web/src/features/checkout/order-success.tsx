@@ -8,15 +8,16 @@ import { DigitalTicket } from "@/components/shared/digital-ticket";
 import { Button } from "@/components/ui/button";
 import { DemoNotice } from "@/components/ui/demo-notice";
 import { EmptyState } from "@/components/ui/empty-state";
-import { venues } from "@/data/seed/catalog";
 import { formatIDR } from "@/lib/currency";
 import { formatDateTime } from "@/lib/dates";
-import { useEventStore } from "@/stores/events";
-import { useOrderStore } from "@/stores/orders";
+import { useCatalog } from "@/services/hooks/use-catalog";
+import { useEventStore } from "@/services/hooks/use-event-store";
+import { useOrderStore } from "@/services/hooks/use-order-store";
 import { usePreferencesStore } from "@/stores/preferences";
 
 export function OrderSuccess() {
   const t = useTranslations();
+  const { venues } = useCatalog();
   const params = useParams<{ orderId: string }>();
   const locale = usePreferencesStore((state) => state.locale);
   const orders = useOrderStore((state) => state.orders);

@@ -14,14 +14,14 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { Field } from "@/components/ui/field";
 import { Input, Select, Textarea } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { cloneLayout, getTemplateLayout } from "@/data/seed/layouts";
 import type { TicketType, VenueLayout } from "@/domain/types";
 import { useHydrated } from "@/hooks/use-hydrated";
 import { formatIDR } from "@/lib/currency";
 import { toDateTimeLocal } from "@/lib/dates";
 import { createId } from "@/lib/ids";
-import { useEventStore } from "@/stores/events";
-import { useOrderStore } from "@/stores/orders";
+import { cloneLayout, getTemplateLayout } from "@/services/catalog/layouts";
+import { useEventStore } from "@/services/hooks/use-event-store";
+import { useOrderStore } from "@/services/hooks/use-order-store";
 import { usePreferencesStore } from "@/stores/preferences";
 
 export default function OrganizerTicketConfigPage() {

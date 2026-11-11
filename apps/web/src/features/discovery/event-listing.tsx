@@ -11,11 +11,11 @@ import { Dialog, SheetContent } from "@/components/ui/dialog";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Field } from "@/components/ui/field";
 import { Input, Select } from "@/components/ui/input";
-import { categories, organizers, venues } from "@/data/seed/catalog";
 import type { Event } from "@/domain/types";
 import { cn } from "@/lib/cn";
 import { getStartingPrice, isEventPurchasable } from "@/lib/pricing";
-import { useEventStore } from "@/stores/events";
+import { useCatalog } from "@/services/hooks/use-catalog";
+import { useEventStore } from "@/services/hooks/use-event-store";
 
 const PAGE_SIZE = 9;
 
@@ -47,6 +47,7 @@ function priceMatch(event: Event, key: string): boolean {
 
 export function EventListing() {
   const t = useTranslations();
+  const { categories, organizers, venues } = useCatalog();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -158,6 +159,9 @@ export function EventListing() {
     availability,
     q,
     sort,
+    categories,
+    organizers,
+    venues,
   ]);
 
   const visible = filtered.slice(0, visibleCount);

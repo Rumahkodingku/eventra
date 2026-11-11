@@ -1041,10 +1041,10 @@ Phase 1.
 
 #### Task 2.1 — Define interfaces and view models
 
-- [ ] Add `Paginated<T>`, `ApiError`, and repository interfaces from §8.1.
-- [ ] Define frontend view models separate from generated DTOs.
-- [ ] Define mapping rules for money, dates, seats, and status enums.
-- [ ] Add compile-time tests or type checks for interface contracts.
+- [x] Add `Paginated<T>`, `ApiError`, and repository interfaces from §8.1.
+- [x] Define frontend view models separate from generated DTOs.
+- [x] Define mapping rules for money, dates, seats, and status enums.
+- [x] Add compile-time tests or type checks for interface contracts.
 
 **Verification:** `npm run typecheck`.
 
@@ -1052,63 +1052,63 @@ Phase 1.
 
 **Files:** `apps/web/src/lib/query-client.tsx`, `apps/web/src/components/providers.tsx`
 
-- [ ] Create a browser query client with sane defaults.
-- [ ] Disable retries for mutations.
-- [ ] Add query provider inside the existing providers tree.
-- [ ] Keep theme and i18n providers intact.
+- [x] Create a browser query client with sane defaults.
+- [x] Disable retries for mutations.
+- [x] Add query provider inside the existing providers tree.
+- [x] Keep theme and i18n providers intact.
 
 **Verification:** existing E2E still passes.
 
 #### Task 2.3 — Catalog adapter
 
-- [ ] Implement `EventRepository` over current `useEventStore` and seed catalog.
-- [ ] Add query hooks for listing, detail, categories, venues.
-- [ ] Replace direct store reads in discovery, event detail, category, and search pages.
-- [ ] Keep URL filter behavior unchanged.
+- [x] Implement `EventRepository` over current `useEventStore` and seed catalog.
+- [x] Add query hooks for listing, detail, categories, venues.
+- [x] Replace direct store reads in discovery, event detail, category, and search pages.
+- [x] Keep URL filter behavior unchanged.
 
 **Verification:** discovery E2E and manual filter/sort checks.
 
 #### Task 2.4 — Cart and ticket selection adapter
 
-- [ ] Implement ticket availability through `TicketRepository`.
-- [ ] Implement `CartRepository` over current cart store.
-- [ ] Replace direct cart store reads in ticket selection, cart, and header.
-- [ ] Keep current totals until Phase 8 replaces them with server quotes.
+- [x] Implement ticket availability through `TicketRepository`.
+- [x] Implement `CartRepository` over current cart store.
+- [x] Replace direct cart store reads in ticket selection, cart, and header.
+- [x] Keep current totals until Phase 8 replaces them with server quotes.
 
 **Verification:** guest cart E2E passes; totals unchanged.
 
 #### Task 2.5 — Checkout, order, and ticket adapter
 
-- [ ] Implement `CheckoutRepository` over current order store.
-- [ ] Implement `OrderRepository` and `TicketWalletRepository`.
-- [ ] Replace direct order/ticket store reads in checkout, success, result, orders, and tickets.
-- [ ] Keep local order creation until Phase 9 replaces it.
+- [x] Implement `CheckoutRepository` over current order store.
+- [x] Implement `OrderRepository` and `TicketWalletRepository`.
+- [x] Replace direct order/ticket store reads in checkout, success, result, orders, and tickets.
+- [x] Keep local order creation until Phase 9 replaces it.
 
 **Verification:** checkout success/failure path manually tested; ticket wallet renders.
 
 #### Task 2.6 — Account and organizer adapter
 
-- [ ] Implement `UserRepository` over session store.
-- [ ] Implement `OrganizerRepository` over event/order stores.
-- [ ] Replace direct store reads in account and organizer pages.
-- [ ] Keep organizer UX guard until Phase 5.
+- [x] Implement `UserRepository` over session store.
+- [x] Implement `OrganizerRepository` over event/order stores.
+- [x] Replace direct store reads in account and organizer pages.
+- [x] Keep organizer UX guard until Phase 5.
 
 **Verification:** organizer E2E and account manual checks.
 
 #### Task 2.7 — Engagement adapter
 
-- [ ] Implement `NotificationRepository` and `ReviewRepository`.
-- [ ] Replace direct store reads in notifications, reviews, wishlist.
-- [ ] Keep local persistence during transition.
+- [x] Implement `NotificationRepository` and `ReviewRepository`.
+- [x] Replace direct store reads in notifications, reviews, wishlist.
+- [x] Keep local persistence during transition.
 
 **Verification:** notification and review manual checks.
 
 #### Task 2.8 — Remove direct imports and add parity tests
 
-- [ ] Search for `@/data/seed` imports in components/pages; remove.
-- [ ] Search for server-state store imports in components/pages; remove.
-- [ ] Add adapter mapping and parity tests.
-- [ ] Document transitional mock adapters as test-only after cutover.
+- [x] Search for `@/data/seed` imports in components/pages; remove.
+- [x] Search for server-state store imports in components/pages; remove.
+- [x] Add adapter mapping and parity tests.
+- [x] Document transitional mock adapters as test-only after cutover.
 
 **Verification:**
 

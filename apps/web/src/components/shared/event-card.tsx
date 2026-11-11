@@ -6,14 +6,14 @@ import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
-import { venues } from "@/data/seed/catalog";
 import type { Event } from "@/domain/types";
 import { cn } from "@/lib/cn";
 import { formatIDR } from "@/lib/currency";
 import { formatShortDate, formatTime } from "@/lib/dates";
 import { getStartingPrice, getTicketAvailability } from "@/lib/pricing";
+import { useCatalog } from "@/services/hooks/use-catalog";
+import { useWishlistStore } from "@/services/hooks/use-wishlist-store";
 import { usePreferencesStore } from "@/stores/preferences";
-import { useWishlistStore } from "@/stores/wishlist";
 
 export function WishlistButton({
   eventId,
@@ -66,6 +66,7 @@ export function EventCard({
 }) {
   const t = useTranslations();
   const locale = usePreferencesStore((state) => state.locale);
+  const { venues } = useCatalog();
   const venue = venues.find((item) => item.id === event.venueId);
   const startingPrice = getStartingPrice(event);
   const soldOut = !event.ticketTypes.some(

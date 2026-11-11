@@ -24,19 +24,20 @@ import { DemoNotice } from "@/components/ui/demo-notice";
 import { EmptyState } from "@/components/ui/empty-state";
 import { QuantityStepper } from "@/components/ui/quantity-stepper";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { venues } from "@/data/seed/catalog";
 import type { Event, Seat, TicketType } from "@/domain/types";
 import { cn } from "@/lib/cn";
 import { formatIDR } from "@/lib/currency";
 import { formatEventDate, formatTime, getTimezoneLabel } from "@/lib/dates";
 import { getTicketAvailability, isEventPurchasable } from "@/lib/pricing";
 import { getTicketForSection } from "@/lib/seat";
-import { useCartStore } from "@/stores/cart";
-import { useEventStore } from "@/stores/events";
+import { useCartStore } from "@/services/hooks/use-cart-store";
+import { useCatalog } from "@/services/hooks/use-catalog";
+import { useEventStore } from "@/services/hooks/use-event-store";
 import { usePreferencesStore } from "@/stores/preferences";
 
 export function TicketSelection() {
   const t = useTranslations();
+  const { venues } = useCatalog();
   const params = useParams<{ slug: string }>();
   const _router = useRouter();
   const events = useEventStore((state) => state.events);

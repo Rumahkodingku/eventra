@@ -23,8 +23,6 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { Field } from "@/components/ui/field";
 import { Checkbox, Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { seedData } from "@/data/seed";
-import { venues } from "@/data/seed/catalog";
 import type { BuyerDetails } from "@/domain/types";
 import { useHydrated } from "@/hooks/use-hydrated";
 import { cn } from "@/lib/cn";
@@ -35,11 +33,12 @@ import {
   getTicketAvailability,
   isEventPurchasable,
 } from "@/lib/pricing";
-import { useCartStore } from "@/stores/cart";
-import { useEventStore } from "@/stores/events";
-import { useOrderStore } from "@/stores/orders";
+import { useCartStore } from "@/services/hooks/use-cart-store";
+import { useCatalog } from "@/services/hooks/use-catalog";
+import { useEventStore } from "@/services/hooks/use-event-store";
+import { useOrderStore } from "@/services/hooks/use-order-store";
+import { useSessionStore } from "@/services/hooks/use-session-store";
 import { usePreferencesStore } from "@/stores/preferences";
-import { useSessionStore } from "@/stores/session";
 
 type AttendeeDraft = { fullName: string; email: string; phone: string };
 
@@ -53,6 +52,7 @@ const paymentMethods = [
 export function CheckoutPage() {
   const t = useTranslations();
   const hydrated = useHydrated();
+  const { promos, venues } = useCatalog();
   const router = useRouter();
   const locale = usePreferencesStore((state) => state.locale);
   const items = useCartStore((state) => state.items);
@@ -84,11 +84,11 @@ export function CheckoutPage() {
       calculateCartTotals({
         items,
         events,
-        promos: seedData.promos,
+        promos,
         orders,
         promoCode,
       }),
-    [items, events, orders, promoCode],
+    [items, events, orders, promoCode, promos],
   );
 
   useEffect(() => {

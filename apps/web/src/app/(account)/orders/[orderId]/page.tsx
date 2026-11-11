@@ -13,10 +13,10 @@ import { visibleOrdersForUser } from "@/lib/access";
 import { formatIDR } from "@/lib/currency";
 import { formatDateTime } from "@/lib/dates";
 import { getSeatLabel } from "@/lib/seat";
-import { useEventStore } from "@/stores/events";
-import { useOrderStore } from "@/stores/orders";
+import { useEventStore } from "@/services/hooks/use-event-store";
+import { useOrderStore } from "@/services/hooks/use-order-store";
+import { useSessionStore } from "@/services/hooks/use-session-store";
 import { usePreferencesStore } from "@/stores/preferences";
-import { useSessionStore } from "@/stores/session";
 
 export default function OrderDetailPage() {
   const t = useTranslations();

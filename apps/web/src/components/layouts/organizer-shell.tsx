@@ -27,7 +27,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { useHydrated } from "@/hooks/use-hydrated";
 import { cn } from "@/lib/cn";
-import { useSessionStore } from "@/stores/session";
+import { useSessionStore } from "@/services/hooks/use-session-store";
 
 const navItems = [
   {

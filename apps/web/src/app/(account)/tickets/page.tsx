@@ -17,18 +17,19 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { venues } from "@/data/seed/catalog";
 import { useHydrated } from "@/hooks/use-hydrated";
 import { visibleTicketsForUser } from "@/lib/access";
 import { formatShortDate, formatTime } from "@/lib/dates";
 import { getSeatLabel } from "@/lib/seat";
-import { useEventStore } from "@/stores/events";
-import { useOrderStore } from "@/stores/orders";
+import { useCatalog } from "@/services/hooks/use-catalog";
+import { useEventStore } from "@/services/hooks/use-event-store";
+import { useOrderStore } from "@/services/hooks/use-order-store";
+import { useSessionStore } from "@/services/hooks/use-session-store";
 import { usePreferencesStore } from "@/stores/preferences";
-import { useSessionStore } from "@/stores/session";
 
 export default function TicketsPage() {
   const t = useTranslations();
+  const { venues } = useCatalog();
   const hydrated = useHydrated();
   const locale = usePreferencesStore((state) => state.locale);
   const user = useSessionStore((state) => state.user);

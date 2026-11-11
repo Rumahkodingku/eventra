@@ -28,14 +28,15 @@ import {
   THead,
   TR,
 } from "@/components/ui/table";
-import { venues } from "@/data/seed/catalog";
 import { useHydrated } from "@/hooks/use-hydrated";
 import { formatShortDate } from "@/lib/dates";
-import { useEventStore } from "@/stores/events";
+import { useCatalog } from "@/services/hooks/use-catalog";
+import { useEventStore } from "@/services/hooks/use-event-store";
 import { usePreferencesStore } from "@/stores/preferences";
 
 export default function OrganizerEventsPage() {
   const t = useTranslations();
+  const { venues } = useCatalog();
   const hydrated = useHydrated();
   const locale = usePreferencesStore((state) => state.locale);
   const events = useEventStore((state) => state.events);

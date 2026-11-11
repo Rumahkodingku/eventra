@@ -11,7 +11,7 @@ import { Logo } from "@/components/ui/logo";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import { useHydrated } from "@/hooks/use-hydrated";
-import { useOrganizerSettingsStore } from "@/stores/organizer-settings";
+import { useOrganizerSettingsStore } from "@/services/hooks/use-organizer-settings-store";
 
 export default function OrganizerSettingsPage() {
   const t = useTranslations();

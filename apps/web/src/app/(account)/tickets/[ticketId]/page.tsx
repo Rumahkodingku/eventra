@@ -21,18 +21,19 @@ import { Badge } from "@/components/ui/badge";
 import { Breadcrumbs } from "@/components/ui/breadcrumbs";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
-import { venues } from "@/data/seed/catalog";
 import { visibleTicketsForUser } from "@/lib/access";
 import { downloadIcs } from "@/lib/calendar";
 import { cn } from "@/lib/cn";
 import { formatEventDate, formatTime, getTimezoneLabel } from "@/lib/dates";
-import { useEventStore } from "@/stores/events";
-import { useOrderStore } from "@/stores/orders";
+import { useCatalog } from "@/services/hooks/use-catalog";
+import { useEventStore } from "@/services/hooks/use-event-store";
+import { useOrderStore } from "@/services/hooks/use-order-store";
+import { useSessionStore } from "@/services/hooks/use-session-store";
 import { usePreferencesStore } from "@/stores/preferences";
-import { useSessionStore } from "@/stores/session";
 
 export default function TicketDetailPage() {
   const t = useTranslations();
+  const { venues } = useCatalog();
   const params = useParams<{ ticketId: string }>();
   const locale = usePreferencesStore((state) => state.locale);
   const user = useSessionStore((state) => state.user);

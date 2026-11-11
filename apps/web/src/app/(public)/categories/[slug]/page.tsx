@@ -11,12 +11,13 @@ import { Badge } from "@/components/ui/badge";
 import { Breadcrumbs } from "@/components/ui/breadcrumbs";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
-import { categories } from "@/data/seed/catalog";
 import { cn } from "@/lib/cn";
-import { useEventStore } from "@/stores/events";
+import { useCatalog } from "@/services/hooks/use-catalog";
+import { useEventStore } from "@/services/hooks/use-event-store";
 
 export default function CategoryPage() {
   const t = useTranslations();
+  const { categories } = useCatalog();
   const params = useParams<{ slug: string }>();
   const events = useEventStore((state) => state.events);
   const category = categories.find((item) => item.slug === params.slug);

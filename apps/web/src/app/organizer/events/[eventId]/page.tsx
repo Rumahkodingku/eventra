@@ -26,16 +26,17 @@ import {
   THead,
   TR,
 } from "@/components/ui/table";
-import { venues } from "@/data/seed/catalog";
 import { formatIDR } from "@/lib/currency";
 import { formatDateTime } from "@/lib/dates";
 import { getTicketAvailability } from "@/lib/pricing";
-import { useEventStore } from "@/stores/events";
-import { useOrderStore } from "@/stores/orders";
+import { useCatalog } from "@/services/hooks/use-catalog";
+import { useEventStore } from "@/services/hooks/use-event-store";
+import { useOrderStore } from "@/services/hooks/use-order-store";
 import { usePreferencesStore } from "@/stores/preferences";
 
 export default function OrganizerEventOverviewPage() {
   const t = useTranslations();
+  const { venues } = useCatalog();
   const params = useParams<{ eventId: string }>();
   const locale = usePreferencesStore((state) => state.locale);
   const events = useEventStore((state) => state.events);

@@ -12,8 +12,8 @@ import { DemoNotice } from "@/components/ui/demo-notice";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import { QuantityStepper } from "@/components/ui/quantity-stepper";
-import { seedData } from "@/data/seed";
-import { venues } from "@/data/seed/catalog";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useHydrated } from "@/hooks/use-hydrated";
 import { cn } from "@/lib/cn";
 import { formatIDR } from "@/lib/currency";
 import { formatShortDate, formatTime } from "@/lib/dates";
@@ -23,13 +23,16 @@ import {
   isEventPurchasable,
 } from "@/lib/pricing";
 import { getSeatLabel } from "@/lib/seat";
-import { useCartStore } from "@/stores/cart";
-import { useEventStore } from "@/stores/events";
-import { useOrderStore } from "@/stores/orders";
+import { useCartStore } from "@/services/hooks/use-cart-store";
+import { useCatalog } from "@/services/hooks/use-catalog";
+import { useEventStore } from "@/services/hooks/use-event-store";
+import { useOrderStore } from "@/services/hooks/use-order-store";
 import { usePreferencesStore } from "@/stores/preferences";
 
 export function CartPage() {
   const t = useTranslations();
+  const hydrated = useHydrated();
+  const { promos, venues } = useCatalog();
   const locale = usePreferencesStore((state) => state.locale);
   const items = useCartStore((state) => state.items);
   const promoCode = useCartStore((state) => state.promoCode);
@@ -47,11 +50,11 @@ export function CartPage() {
       calculateCartTotals({
         items,
         events,
-        promos: seedData.promos,
+        promos,
         orders,
         promoCode,
       }),
-    [items, events, orders, promoCode],
+    [items, events, orders, promoCode, promos],
   );
 
   const issueItems = items.filter((item) => {
@@ -70,7 +73,7 @@ export function CartPage() {
     const result = calculateCartTotals({
       items,
       events,
-      promos: seedData.promos,
+      promos,
       orders,
       promoCode: promoInput,
     });
@@ -93,6 +96,18 @@ export function CartPage() {
     setPromoInput("");
     toast.success(t("cart.promoApplied", { code: result.promo.code }));
   };
+
+  if (!hydrated) {
+    return (
+      <div className="container-page section-space">
+        <Skeleton className="h-12 w-1/3" />
+        <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_380px]">
+          <Skeleton className="h-96" />
+          <Skeleton className="h-80" />
+        </div>
+      </div>
+    );
+  }
 
   if (!items.length) {
     return (

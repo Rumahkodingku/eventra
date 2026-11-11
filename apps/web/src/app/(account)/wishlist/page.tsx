@@ -8,8 +8,8 @@ import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useHydrated } from "@/hooks/use-hydrated";
-import { useEventStore } from "@/stores/events";
-import { useWishlistStore } from "@/stores/wishlist";
+import { useEventStore } from "@/services/hooks/use-event-store";
+import { useWishlistStore } from "@/services/hooks/use-wishlist-store";
 
 export default function WishlistPage() {
   const t = useTranslations();

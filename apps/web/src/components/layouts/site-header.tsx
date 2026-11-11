@@ -34,10 +34,10 @@ import { Logo } from "@/components/ui/logo";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { useHydrated } from "@/hooks/use-hydrated";
 import { cn } from "@/lib/cn";
-import { useCartStore } from "@/stores/cart";
-import { useNotificationStore } from "@/stores/notifications";
-import { useSessionStore } from "@/stores/session";
-import { useWishlistStore } from "@/stores/wishlist";
+import { useCartStore } from "@/services/hooks/use-cart-store";
+import { useNotificationStore } from "@/services/hooks/use-notification-store";
+import { useSessionStore } from "@/services/hooks/use-session-store";
+import { useWishlistStore } from "@/services/hooks/use-wishlist-store";
 
 export function SiteHeader() {
   const t = useTranslations();

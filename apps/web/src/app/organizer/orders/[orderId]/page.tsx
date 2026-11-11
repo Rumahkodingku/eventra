@@ -20,8 +20,8 @@ import {
 import { formatIDR } from "@/lib/currency";
 import { formatDateTime } from "@/lib/dates";
 import { getSeatLabel } from "@/lib/seat";
-import { useEventStore } from "@/stores/events";
-import { useOrderStore } from "@/stores/orders";
+import { useEventStore } from "@/services/hooks/use-event-store";
+import { useOrderStore } from "@/services/hooks/use-order-store";
 import { usePreferencesStore } from "@/stores/preferences";
 
 export default function OrganizerOrderDetailPage() {

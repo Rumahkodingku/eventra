@@ -9,8 +9,8 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useHydrated } from "@/hooks/use-hydrated";
 import { cn } from "@/lib/cn";
-import { useNotificationStore } from "@/stores/notifications";
-import { useSessionStore } from "@/stores/session";
+import { useNotificationStore } from "@/services/hooks/use-notification-store";
+import { useSessionStore } from "@/services/hooks/use-session-store";
 
 export default function NotificationsPage() {
   const t = useTranslations();

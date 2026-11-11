@@ -8,10 +8,10 @@ import { useDeferredValue, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { categories, venues } from "@/data/seed/catalog";
 import { cn } from "@/lib/cn";
 import { formatShortDate } from "@/lib/dates";
-import { useEventStore } from "@/stores/events";
+import { useCatalog } from "@/services/hooks/use-catalog";
+import { useEventStore } from "@/services/hooks/use-event-store";
 import { useRecentStore } from "@/stores/recent";
 
 export function SearchDialog({
@@ -23,6 +23,7 @@ export function SearchDialog({
 }) {
   const t = useTranslations();
   const router = useRouter();
+  const { categories, venues } = useCatalog();
   const events = useEventStore((state) => state.events);
   const searches = useRecentStore((state) => state.searches);
   const addSearch = useRecentStore((state) => state.addSearch);
@@ -58,7 +59,7 @@ export function SearchDialog({
       )
       .slice(0, 5)
       .map((item) => item.event);
-  }, [events, normalized]);
+  }, [events, normalized, categories, venues]);
 
   const submit = (value: string) => {
     const next = value.trim();

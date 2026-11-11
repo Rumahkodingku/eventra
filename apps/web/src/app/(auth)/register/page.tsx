@@ -12,7 +12,7 @@ import { DemoNotice } from "@/components/ui/demo-notice";
 import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Logo } from "@/components/ui/logo";
-import { useSessionStore } from "@/stores/session";
+import { useSessionStore } from "@/services/hooks/use-session-store";
 
 export default function RegisterPage() {
   const t = useTranslations();

@@ -38,15 +38,15 @@ import {
   THead,
   TR,
 } from "@/components/ui/table";
-import { venues } from "@/data/seed/catalog";
 import { useHydrated } from "@/hooks/use-hydrated";
 import { cn } from "@/lib/cn";
 import { formatIDR, formatNumber, formatPercent } from "@/lib/currency";
 import { formatDateTime, formatShortDate } from "@/lib/dates";
-import { useEventStore } from "@/stores/events";
-import { useOrderStore } from "@/stores/orders";
+import { useCatalog } from "@/services/hooks/use-catalog";
+import { useEventStore } from "@/services/hooks/use-event-store";
+import { useOrderStore } from "@/services/hooks/use-order-store";
+import { useSessionStore } from "@/services/hooks/use-session-store";
 import { usePreferencesStore } from "@/stores/preferences";
-import { useSessionStore } from "@/stores/session";
 
 const ranges = [
   { key: "7", days: 7, labelKey: "organizer.last7" },
@@ -57,6 +57,7 @@ const ranges = [
 
 export default function OrganizerDashboardPage() {
   const t = useTranslations();
+  const { venues } = useCatalog();
   const hydrated = useHydrated();
   const locale = usePreferencesStore((state) => state.locale);
   const user = useSessionStore((state) => state.user);

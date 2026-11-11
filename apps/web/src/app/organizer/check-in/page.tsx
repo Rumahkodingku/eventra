@@ -14,16 +14,17 @@ import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { venues } from "@/data/seed/catalog";
 import { useHydrated } from "@/hooks/use-hydrated";
 import { formatDateTime } from "@/lib/dates";
 import { getSeatLabel } from "@/lib/seat";
-import { useEventStore } from "@/stores/events";
-import { useOrderStore } from "@/stores/orders";
+import { useCatalog } from "@/services/hooks/use-catalog";
+import { useEventStore } from "@/services/hooks/use-event-store";
+import { useOrderStore } from "@/services/hooks/use-order-store";
 import { usePreferencesStore } from "@/stores/preferences";
 
 export default function OrganizerCheckInPage() {
   const t = useTranslations();
+  const { venues } = useCatalog();
   const hydrated = useHydrated();
   const locale = usePreferencesStore((state) => state.locale);
   const tickets = useOrderStore((state) => state.tickets);

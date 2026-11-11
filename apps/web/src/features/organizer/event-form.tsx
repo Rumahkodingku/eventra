@@ -20,12 +20,12 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { Field } from "@/components/ui/field";
 import { Input, Select, Textarea } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { categories, venues } from "@/data/seed/catalog";
 import type { Event, ScheduleItem } from "@/domain/types";
 import { useHydrated } from "@/hooks/use-hydrated";
 import { cn } from "@/lib/cn";
 import { toDateTimeLocal } from "@/lib/dates";
-import { useEventStore } from "@/stores/events";
+import { useCatalog } from "@/services/hooks/use-catalog";
+import { useEventStore } from "@/services/hooks/use-event-store";
 
 const defaultImage = "/images/events/concert-01.webp";
 const imageOptions = [
@@ -41,6 +41,7 @@ const imageOptions = [
 
 export function OrganizerEventForm({ eventId }: { eventId?: string }) {
   const t = useTranslations();
+  const { categories, venues } = useCatalog();
   const router = useRouter();
   const hydrated = useHydrated();
   const events = useEventStore((state) => state.events);

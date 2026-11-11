@@ -12,7 +12,7 @@ import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useHydrated } from "@/hooks/use-hydrated";
-import { useSessionStore } from "@/stores/session";
+import { useSessionStore } from "@/services/hooks/use-session-store";
 
 export default function ProfilePage() {
   const t = useTranslations();

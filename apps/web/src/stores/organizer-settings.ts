@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import { safeStorage } from "@/lib/storage";
 
-interface OrganizerSettings {
+export interface OrganizerSettings {
   displayName: string;
   description: string;
   email: string;

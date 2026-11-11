@@ -9,10 +9,11 @@ import { Button } from "@/components/ui/button";
 import { DemoNotice } from "@/components/ui/demo-notice";
 import { Input } from "@/components/ui/input";
 import { Logo } from "@/components/ui/logo";
-import { categories } from "@/data/seed/catalog";
+import { useCatalog } from "@/services/hooks/use-catalog";
 
 export function SiteFooter() {
   const t = useTranslations();
+  const { categories } = useCatalog();
   const [email, setEmail] = useState("");
   const [subscribed, setSubscribed] = useState(false);
 

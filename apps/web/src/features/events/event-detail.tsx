@@ -27,7 +27,6 @@ import { Breadcrumbs } from "@/components/ui/breadcrumbs";
 import { Button } from "@/components/ui/button";
 import { DemoNotice } from "@/components/ui/demo-notice";
 import { EmptyState } from "@/components/ui/empty-state";
-import { categories, organizers, venues } from "@/data/seed/catalog";
 import { ownsTicketForEvent } from "@/lib/access";
 import { downloadIcs } from "@/lib/calendar";
 import { cn } from "@/lib/cn";
@@ -44,16 +43,18 @@ import {
   getTicketAvailability,
   isEventPurchasable,
 } from "@/lib/pricing";
-import { useEventStore } from "@/stores/events";
-import { useOrderStore } from "@/stores/orders";
+import { useCatalog } from "@/services/hooks/use-catalog";
+import { useEventStore } from "@/services/hooks/use-event-store";
+import { useOrderStore } from "@/services/hooks/use-order-store";
+import { useReviewStore } from "@/services/hooks/use-review-store";
+import { useSessionStore } from "@/services/hooks/use-session-store";
+import { useWishlistStore } from "@/services/hooks/use-wishlist-store";
 import { usePreferencesStore } from "@/stores/preferences";
 import { useRecentStore } from "@/stores/recent";
-import { useReviewStore } from "@/stores/reviews";
-import { useSessionStore } from "@/stores/session";
-import { useWishlistStore } from "@/stores/wishlist";
 
 export function EventDetail() {
   const t = useTranslations();
+  const { categories, organizers, venues } = useCatalog();
   const params = useParams<{ slug: string }>();
   const events = useEventStore((state) => state.events);
   const addView = useRecentStore((state) => state.addView);

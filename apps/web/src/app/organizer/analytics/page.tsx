@@ -32,8 +32,8 @@ import { useHydrated } from "@/hooks/use-hydrated";
 import { cn } from "@/lib/cn";
 import { downloadCsv } from "@/lib/csv";
 import { formatIDR, formatNumber, formatPercent } from "@/lib/currency";
-import { useEventStore } from "@/stores/events";
-import { useOrderStore } from "@/stores/orders";
+import { useEventStore } from "@/services/hooks/use-event-store";
+import { useOrderStore } from "@/services/hooks/use-order-store";
 import { usePreferencesStore } from "@/stores/preferences";
 
 const ranges = [

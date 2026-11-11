@@ -14,9 +14,9 @@ import { useHydrated } from "@/hooks/use-hydrated";
 import { visibleOrdersForUser } from "@/lib/access";
 import { formatIDR } from "@/lib/currency";
 import { formatDateTime } from "@/lib/dates";
-import { useOrderStore } from "@/stores/orders";
+import { useOrderStore } from "@/services/hooks/use-order-store";
+import { useSessionStore } from "@/services/hooks/use-session-store";
 import { usePreferencesStore } from "@/stores/preferences";
-import { useSessionStore } from "@/stores/session";
 
 export default function OrdersPage() {
   const t = useTranslations();

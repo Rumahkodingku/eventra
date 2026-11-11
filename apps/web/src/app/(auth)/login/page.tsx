@@ -18,7 +18,10 @@ import { DemoNotice } from "@/components/ui/demo-notice";
 import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Logo } from "@/components/ui/logo";
-import { demoCredentials, useSessionStore } from "@/stores/session";
+import {
+  demoCredentials,
+  useSessionStore,
+} from "@/services/hooks/use-session-store";
 
 export default function LoginPage() {
   const t = useTranslations();
@@ -37,7 +40,7 @@ export default function LoginPage() {
       return;
     }
     setError(null);
-    const user = useSessionStore.getState().user;
+    const user = result.user;
     toast.success(t("auth.welcome", { name: user?.name ?? "" }));
     router.push(
       user?.role === "ORGANIZER" ? "/organizer/dashboard" : "/tickets",

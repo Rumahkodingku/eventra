@@ -1591,12 +1591,12 @@ Phase 5.
 
 #### Task 6.5 — Image upload
 
-- [ ] Add storage adapter interface.
-- [ ] Add MinIO/S3-compatible dev implementation.
-- [ ] Validate MIME, extension, size, dimensions.
-- [ ] Generate server-side object keys.
-- [ ] Use presigned upload or server upload.
-- [ ] Clean abandoned uploads.
+- [x] Add storage adapter interface.
+- [x] Add MinIO/S3-compatible dev implementation.
+- [x] Validate MIME, extension, size, dimensions.
+- [x] Generate server-side object keys.
+- [x] Use presigned upload or server upload.
+- [x] Clean abandoned uploads.
 
 **Verification:** valid upload passes; invalid type/size fails; key not client-controlled.
 

@@ -20,6 +20,7 @@ import (
 	"github.com/eventra/eventra/apps/api/internal/platform/database"
 	"github.com/eventra/eventra/apps/api/internal/platform/httpserver"
 	"github.com/eventra/eventra/apps/api/internal/platform/logger"
+	"github.com/eventra/eventra/apps/api/internal/platform/storage"
 )
 
 func main() {
@@ -64,7 +65,16 @@ func main() {
 		RefreshTTL: time.Duration(cfg.RefreshTTLHours) * time.Hour,
 	})
 	authHandler := identity.NewHandler(authService, cfg.CookieSecure)
-	catalogHandler := catalog.NewHandler(catalog.NewService(db))
+	var imageStore *storage.ImageStore
+	if store, err := storage.NewImageStore(startupCtx, storage.Config{
+		Endpoint: cfg.S3Endpoint, AccessKey: cfg.S3AccessKey, SecretKey: cfg.S3SecretKey,
+		Bucket: cfg.S3Bucket, UseSSL: cfg.S3UseSSL, PublicBase: cfg.S3PublicBase,
+	}); err == nil {
+		imageStore = store
+	} else {
+		log.Warn("image_storage_unavailable", "error", err)
+	}
+	catalogHandler := catalog.NewHandler(catalog.NewService(db), imageStore)
 	inventoryService := inventory.NewService(db, 10*time.Minute)
 	inventoryHandler := inventory.NewHandler(inventoryService)
 	cartHandler := cart.NewHandler(cart.NewService(db, inventoryService))

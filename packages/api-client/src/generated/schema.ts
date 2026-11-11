@@ -503,6 +503,24 @@ export interface paths {
         patch: operations["updateOrganizerEvent"];
         trace?: never;
     };
+    "/organizer/uploads": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create a presigned image upload */
+        post: operations["createUpload"];
+        /** Delete an uploaded image */
+        delete: operations["deleteUpload"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/organizer/events/{eventId}/check-in": {
         parameters: {
             query?: never;
@@ -1013,6 +1031,16 @@ export interface components {
         OrganizerEventUpdate: components["schemas"]["OrganizerEventCreate"] & {
             /** @enum {string} */
             status?: "DRAFT" | "PUBLISHED" | "PAUSED" | "ENDED" | "CANCELLED";
+        };
+        UploadRequest: {
+            /** @enum {string} */
+            content_type: "image/jpeg" | "image/png" | "image/webp";
+            size: number;
+        };
+        UploadResponse: {
+            key: string;
+            upload_url: string;
+            public_url: string;
         };
         CheckInRequest: {
             token: string;
@@ -1934,6 +1962,61 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["OrganizerEventSummary"];
                 };
+            };
+        };
+    };
+    createUpload: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UploadRequest"];
+            };
+        };
+        responses: {
+            /** @description Presigned upload URL */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UploadResponse"];
+                };
+            };
+            /** @description Invalid image metadata */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    deleteUpload: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    key: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Deleted */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };

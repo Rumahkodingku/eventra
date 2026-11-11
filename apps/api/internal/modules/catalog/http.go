@@ -3,18 +3,22 @@ package catalog
 import (
 	"net/http"
 	"strconv"
+	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 
 	"github.com/eventra/eventra/apps/api/internal/modules/identity"
+	"github.com/eventra/eventra/apps/api/internal/platform/storage"
 )
 
 type Handler struct {
 	service *Service
+	storage *storage.ImageStore
 }
 
-func NewHandler(service *Service) *Handler {
-	return &Handler{service: service}
+func NewHandler(service *Service, imageStore *storage.ImageStore) *Handler {
+	return &Handler{service: service, storage: imageStore}
 }
 
 func (h *Handler) RegisterRoutes(router *gin.RouterGroup, auth *identity.Handler) {
@@ -35,6 +39,8 @@ func (h *Handler) RegisterRoutes(router *gin.RouterGroup, auth *identity.Handler
 	organizer.POST("/events/:eventId/pause", h.pauseEvent)
 	organizer.POST("/events/:eventId/cancel", h.cancelEvent)
 	organizer.GET("/events/:eventId/ticket-types", h.listTicketTypes)
+	organizer.POST("/uploads", h.createUpload)
+	organizer.DELETE("/uploads", h.deleteUpload)
 }
 
 func (h *Handler) listCategories(c *gin.Context) {
@@ -219,6 +225,57 @@ func (h *Handler) transition(c *gin.Context, status string) {
 		return
 	}
 	c.JSON(http.StatusOK, event)
+}
+
+func (h *Handler) createUpload(c *gin.Context) {
+	if h.storage == nil {
+		writeError(c, http.StatusServiceUnavailable, "UPLOAD_UNAVAILABLE", "Image storage is not configured.")
+		return
+	}
+	var body struct {
+		ContentType string `json:"content_type"`
+		Size        int64  `json:"size"`
+	}
+	if err := c.ShouldBindJSON(&body); err != nil {
+		writeError(c, http.StatusBadRequest, "VALIDATION_FAILED", "Invalid upload request.")
+		return
+	}
+	if err := storage.ValidateImage(body.ContentType, body.Size); err != nil {
+		writeError(c, http.StatusBadRequest, "VALIDATION_FAILED", "Only JPEG, PNG, or WebP images up to 5 MB are allowed.")
+		return
+	}
+	key, err := storage.BuildImageKey("events", body.ContentType)
+	if err != nil {
+		writeError(c, http.StatusBadRequest, "VALIDATION_FAILED", "Unsupported image type.")
+		return
+	}
+	uploadURL, err := h.storage.PresignPut(c.Request.Context(), key, body.ContentType, 10*time.Minute)
+	if err != nil {
+		writeError(c, http.StatusInternalServerError, "INTERNAL", "Could not create upload URL.")
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"key": key, "upload_url": uploadURL, "public_url": h.storage.PublicURL(key),
+	})
+}
+
+func (h *Handler) deleteUpload(c *gin.Context) {
+	if h.storage == nil {
+		writeError(c, http.StatusServiceUnavailable, "UPLOAD_UNAVAILABLE", "Image storage is not configured.")
+		return
+	}
+	var body struct {
+		Key string `json:"key"`
+	}
+	if err := c.ShouldBindJSON(&body); err != nil || !strings.HasPrefix(body.Key, "events/") {
+		writeError(c, http.StatusBadRequest, "VALIDATION_FAILED", "Invalid upload key.")
+		return
+	}
+	if err := h.storage.Delete(c.Request.Context(), body.Key); err != nil {
+		writeError(c, http.StatusNotFound, "NOT_FOUND", "Upload not found.")
+		return
+	}
+	c.Status(http.StatusNoContent)
 }
 
 func (h *Handler) organizationID(c *gin.Context) (string, error) {

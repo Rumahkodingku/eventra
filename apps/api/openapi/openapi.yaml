@@ -865,6 +865,27 @@ components:
             status:
               type: string
               enum: [DRAFT, PUBLISHED, PAUSED, ENDED, CANCELLED]
+    UploadRequest:
+      type: object
+      required: [content_type, size]
+      properties:
+        content_type:
+          type: string
+          enum: [image/jpeg, image/png, image/webp]
+        size:
+          type: integer
+          minimum: 1
+          maximum: 5242880
+    UploadResponse:
+      type: object
+      required: [key, upload_url, public_url]
+      properties:
+        key:
+          type: string
+        upload_url:
+          type: string
+        public_url:
+          type: string
     CheckInRequest:
       type: object
       required: [token]
@@ -1590,6 +1611,47 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/OrganizerEventSummary"
+  /organizer/uploads:
+    post:
+      summary: Create a presigned image upload
+      tags: [Organizer]
+      operationId: createUpload
+      security:
+        - accessCookie: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UploadRequest"
+      responses:
+        "200":
+          description: Presigned upload URL
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UploadResponse"
+        "400":
+          description: Invalid image metadata
+    delete:
+      summary: Delete an uploaded image
+      tags: [Organizer]
+      operationId: deleteUpload
+      security:
+        - accessCookie: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [key]
+              properties:
+                key:
+                  type: string
+      responses:
+        "204":
+          description: Deleted
   /organizer/events/{eventId}/check-in:
     post:
       summary: CheckInTicket

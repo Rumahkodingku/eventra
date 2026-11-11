@@ -15,13 +15,15 @@ import (
 
 	"github.com/eventra/eventra/apps/api/internal/modules/catalog"
 	"github.com/eventra/eventra/apps/api/internal/modules/identity"
+	"github.com/eventra/eventra/apps/api/internal/modules/inventory"
 )
 
 type Dependencies struct {
-	DB      *gorm.DB
-	Redis   *redis.Client
-	Auth    *identity.Handler
-	Catalog *catalog.Handler
+	DB        *gorm.DB
+	Redis     *redis.Client
+	Auth      *identity.Handler
+	Catalog   *catalog.Handler
+	Inventory *inventory.Handler
 }
 
 func NewRouter(cfg Config, log *slog.Logger, deps Dependencies) *gin.Engine {
@@ -40,6 +42,9 @@ func NewRouter(cfg Config, log *slog.Logger, deps Dependencies) *gin.Engine {
 	}
 	if deps.Catalog != nil && deps.Auth != nil {
 		deps.Catalog.RegisterRoutes(v1, deps.Auth)
+	}
+	if deps.Inventory != nil && deps.Auth != nil {
+		deps.Inventory.RegisterRoutes(v1, deps.Auth)
 	}
 	v1.GET("/health/live", live)
 	v1.GET("/health/ready", ready(deps))

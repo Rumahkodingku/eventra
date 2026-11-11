@@ -504,7 +504,10 @@ components:
       allOf:
         - $ref: "#/components/schemas/QuoteRequest"
         - type: object
+          required: [event_id]
           properties:
+            event_id:
+              type: string
             reservation_id:
               type: string
     ReservationResponse:

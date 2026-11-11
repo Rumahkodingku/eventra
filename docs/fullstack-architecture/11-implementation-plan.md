@@ -1677,50 +1677,50 @@ Phase 6.
 
 #### Task 7.1 — Inventory schema
 
-- [ ] Create `inventory_buckets` unique per ticket type.
-- [ ] Create `inventory_reservations` and `inventory_reservation_items`.
-- [ ] Create `seat_claims` with unique `(event_id, seat_id)`.
-- [ ] Add reservation status/expiry indexes.
-- [ ] Add invariant checks.
+- [x] Create `inventory_buckets` unique per ticket type.
+- [x] Create `inventory_reservations` and `inventory_reservation_items`.
+- [x] Create `seat_claims` with unique `(event_id, seat_id)`.
+- [x] Add reservation status/expiry indexes.
+- [x] Add invariant checks.
 
 **Verification:** migration up/down; unique constraint tests.
 
 #### Task 7.2 — Seed inventory
 
-- [ ] Create GA buckets from ticket quotas.
-- [ ] Create seat claims/history from current sold seats where applicable.
-- [ ] Ensure `reserved + sold <= capacity`.
-- [ ] Keep deterministic seed.
+- [x] Create GA buckets from ticket quotas.
+- [x] Create seat claims/history from current sold seats where applicable.
+- [x] Ensure `reserved + sold <= capacity`.
+- [x] Keep deterministic seed.
 
 **Verification:** inventory totals match ticket types and layouts.
 
 #### Task 7.3 — Availability API
 
-- [ ] Return GA remaining and seat statuses.
-- [ ] Separate layout metadata from availability.
-- [ ] Cache public layout metadata; do not cache user-specific reservation state.
-- [ ] Include reservation expiry in quote responses.
+- [x] Return GA remaining and seat statuses.
+- [x] Separate layout metadata from availability.
+- [x] Cache public layout metadata; do not cache user-specific reservation state.
+- [x] Include reservation expiry in quote responses.
 
 **Verification:** availability reflects reservations and sales.
 
 #### Task 7.4 — Reservation lifecycle
 
-- [ ] Create reservation with 10-minute TTL.
-- [ ] Lock GA bucket row `FOR UPDATE`.
-- [ ] Lock seats in deterministic order.
-- [ ] Reject whole reservation if any seat is unavailable.
-- [ ] Support release on user cancel, expiry, or failure.
-- [ ] Confirm reservation inside order transaction.
+- [x] Create reservation with 10-minute TTL.
+- [x] Lock GA bucket row `FOR UPDATE`.
+- [x] Lock seats in deterministic order.
+- [x] Reject whole reservation if any seat is unavailable.
+- [x] Support release on user cancel, expiry, or failure.
+- [x] Confirm reservation inside order transaction.
 
 **Verification:** concurrent tests prove no oversell/duplicate.
 
 #### Task 7.5 — Expiry worker
 
-- [ ] Add worker command.
-- [ ] Poll expired active reservations.
-- [ ] Release capacity exactly once.
-- [ ] Make release idempotent.
-- [ ] Add metrics/logs.
+- [x] Add worker command.
+- [x] Poll expired active reservations.
+- [x] Release capacity exactly once.
+- [x] Make release idempotent.
+- [x] Add metrics/logs.
 
 **Verification:** run two workers concurrently; each reservation releases once.
 

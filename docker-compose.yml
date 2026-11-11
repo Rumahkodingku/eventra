@@ -53,6 +53,22 @@ services:
       timeout: 3s
       retries: 5
 
+  worker:
+    build:
+      context: .
+      dockerfile: infra/docker/api.Dockerfile
+    entrypoint: ["/usr/local/bin/worker"]
+    environment:
+      APP_ENV: development
+      DATABASE_URL: eventra:eventra@tcp(mysql:3306)/eventra?parseTime=true&charset=utf8mb4&loc=UTC
+      REDIS_URL: redis://redis:6379/0
+      LOG_LEVEL: info
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
   migrate:
     build:
       context: .

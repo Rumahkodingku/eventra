@@ -12,8 +12,11 @@ import (
 	"gorm.io/datatypes"
 	"gorm.io/gorm"
 
+	"github.com/oklog/ulid/v2"
+
 	"github.com/eventra/eventra/apps/api/internal/modules/catalog"
 	"github.com/eventra/eventra/apps/api/internal/modules/identity"
+	"github.com/eventra/eventra/apps/api/internal/modules/inventory"
 	"github.com/eventra/eventra/apps/api/internal/platform/config"
 	"github.com/eventra/eventra/apps/api/internal/platform/database"
 )
@@ -167,7 +170,10 @@ func importCatalog(ctx context.Context, db *gorm.DB, seed seedFile) error {
 	}
 
 	return db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
-		for _, table := range []string{"ticket_types", "events", "seats", "venue_sections", "venue_layouts", "categories", "venues"} {
+		for _, table := range []string{
+			"seat_claims", "inventory_reservation_items", "inventory_reservations", "inventory_buckets",
+			"ticket_types", "events", "seats", "venue_sections", "venue_layouts", "categories", "venues",
+		} {
 			if err := tx.Exec("DELETE FROM " + table).Error; err != nil {
 				return err
 			}
@@ -277,6 +283,12 @@ func importCatalog(ctx context.Context, db *gorm.DB, seed seedFile) error {
 					Quota: ticket.Quota, SoldCount: ticket.SoldCount, MinPerOrder: ticket.MinPerOrder,
 					MaxPerOrder: ticket.MaxPerOrder, SalesStartAt: start, SalesEndAt: end,
 					Benefits: benefits, Status: ticket.Status, Kind: ticket.Kind, TierKey: tierKey,
+				}).Error; err != nil {
+					return err
+				}
+				if err := tx.Create(&inventory.Bucket{
+					ID: ulid.Make().String(), TicketTypeID: ticket.ID,
+					Capacity: ticket.Quota, Sold: ticket.SoldCount,
 				}).Error; err != nil {
 					return err
 				}

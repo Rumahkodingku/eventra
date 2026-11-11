@@ -99,9 +99,12 @@ func (h *Handler) listTicketTypes(c *gin.Context) {
 		writeError(c, http.StatusInternalServerError, "INTERNAL", "Could not load ticket types.")
 		return
 	}
-	remaining := map[string]int{}
-	for _, ticket := range tickets {
-		remaining[ticket.ID] = ticket.Quota - ticket.SoldCount
+	remaining, err := h.service.Availability(c.Request.Context(), eventID)
+	if err != nil {
+		remaining = map[string]int{}
+		for _, ticket := range tickets {
+			remaining[ticket.ID] = ticket.Quota - ticket.SoldCount
+		}
 	}
 	c.JSON(http.StatusOK, gin.H{"items": tickets, "remaining": remaining})
 }

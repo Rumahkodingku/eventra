@@ -11,6 +11,7 @@ import (
 
 	"github.com/eventra/eventra/apps/api/internal/modules/catalog"
 	"github.com/eventra/eventra/apps/api/internal/modules/identity"
+	"github.com/eventra/eventra/apps/api/internal/modules/inventory"
 	"github.com/eventra/eventra/apps/api/internal/platform/cache"
 	"github.com/eventra/eventra/apps/api/internal/platform/config"
 	"github.com/eventra/eventra/apps/api/internal/platform/database"
@@ -61,12 +62,14 @@ func main() {
 	})
 	authHandler := identity.NewHandler(authService, cfg.CookieSecure)
 	catalogHandler := catalog.NewHandler(catalog.NewService(db))
+	inventoryHandler := inventory.NewHandler(inventory.NewService(db, 10*time.Minute))
 
 	server := httpserver.NewServer(
 		httpserver.ServerConfig{HTTPAddr: cfg.HTTPAddr, WebOrigin: cfg.WebOrigin},
 		log,
 		httpserver.Dependencies{
-			DB: db, Redis: redisClient, Auth: authHandler, Catalog: catalogHandler,
+			DB: db, Redis: redisClient, Auth: authHandler,
+			Catalog: catalogHandler, Inventory: inventoryHandler,
 		},
 	)
 

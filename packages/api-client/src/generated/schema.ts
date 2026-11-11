@@ -831,6 +831,7 @@ export interface components {
             expires_at?: string;
         };
         ReservationRequest: components["schemas"]["QuoteRequest"] & {
+            event_id: string;
             reservation_id?: string;
         };
         ReservationResponse: {

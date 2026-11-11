@@ -17,6 +17,11 @@ const (
 	defaultAccessTTL    = 15
 	defaultRefreshTTL   = 720
 	defaultCookieSecure = false
+	defaultS3Endpoint   = "localhost:9000"
+	defaultS3AccessKey  = "minioadmin"
+	defaultS3SecretKey  = "minioadmin"
+	defaultS3Bucket     = "eventra"
+	defaultS3PublicBase = "http://localhost:9000/eventra"
 )
 
 type Config struct {
@@ -30,6 +35,12 @@ type Config struct {
 	AccessTTLMin    int
 	RefreshTTLHours int
 	CookieSecure    bool
+	S3Endpoint      string
+	S3AccessKey     string
+	S3SecretKey     string
+	S3Bucket        string
+	S3UseSSL        bool
+	S3PublicBase    string
 }
 
 func Load() (Config, error) {
@@ -44,6 +55,12 @@ func Load() (Config, error) {
 		AccessTTLMin:    getenvInt("JWT_ACCESS_TTL_MINUTES", defaultAccessTTL),
 		RefreshTTLHours: getenvInt("JWT_REFRESH_TTL_HOURS", defaultRefreshTTL),
 		CookieSecure:    getenvBool("COOKIE_SECURE", defaultCookieSecure),
+		S3Endpoint:      getenv("S3_ENDPOINT", defaultS3Endpoint),
+		S3AccessKey:     getenv("S3_ACCESS_KEY", defaultS3AccessKey),
+		S3SecretKey:     getenv("S3_SECRET_KEY", defaultS3SecretKey),
+		S3Bucket:        getenv("S3_BUCKET", defaultS3Bucket),
+		S3UseSSL:        getenvBool("S3_USE_SSL", false),
+		S3PublicBase:    getenv("S3_PUBLIC_BASE", defaultS3PublicBase),
 	}
 
 	if err := cfg.Validate(); err != nil {

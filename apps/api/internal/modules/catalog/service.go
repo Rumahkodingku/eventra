@@ -120,6 +120,28 @@ func (s *Service) ListTicketTypes(ctx context.Context, eventID string) ([]Ticket
 	return tickets, err
 }
 
+func (s *Service) Availability(ctx context.Context, eventID string) (map[string]int, error) {
+	type row struct {
+		TicketTypeID string
+		Remaining    int
+	}
+	var rows []row
+	err := s.db.WithContext(ctx).
+		Table("inventory_buckets").
+		Select("inventory_buckets.ticket_type_id, GREATEST(inventory_buckets.capacity - inventory_buckets.sold - inventory_buckets.reserved, 0) AS remaining").
+		Joins("JOIN ticket_types ON ticket_types.id = inventory_buckets.ticket_type_id").
+		Where("ticket_types.event_id = ?", eventID).
+		Scan(&rows).Error
+	if err != nil {
+		return nil, err
+	}
+	result := make(map[string]int, len(rows))
+	for _, item := range rows {
+		result[item.TicketTypeID] = item.Remaining
+	}
+	return result, nil
+}
+
 func (s *Service) getLayout(ctx context.Context, id string) (VenueLayout, error) {
 	var layout VenueLayout
 	err := s.db.WithContext(ctx).

@@ -59,7 +59,8 @@ func TestImageStoreCreatesBucketPresignsAndDeletes(t *testing.T) {
 	defer server.Close()
 
 	store, err := NewImageStore(context.Background(), Config{
-		Endpoint: server.URL, Region: "garage", AccessKey: "test",
+		Endpoint: server.URL, PublicEndpoint: "https://cdn.example.test",
+		Region: "garage", AccessKey: "test",
 		SecretKey: "test", Bucket: "eventra-uploads",
 		CorsOrigins: "http://localhost:3000",
 		PublicBase:  server.URL + "/eventra-uploads",
@@ -82,6 +83,9 @@ func TestImageStoreCreatesBucketPresignsAndDeletes(t *testing.T) {
 		if !strings.Contains(url, expected) {
 			t.Fatalf("presigned URL missing %q: %s", expected, url)
 		}
+	}
+	if !strings.HasPrefix(url, "https://cdn.example.test/") {
+		t.Fatalf("presigned URL uses wrong endpoint: %s", url)
 	}
 
 	if err := store.Delete(context.Background(), "events/test.png"); err != nil {

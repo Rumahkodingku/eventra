@@ -21,14 +21,15 @@ const MaxImageBytes = 5 << 20
 var ErrInvalidImage = errors.New("invalid image")
 
 type Config struct {
-	Endpoint    string
-	Region      string
-	AccessKey   string
-	SecretKey   string
-	Bucket      string
-	UseSSL      bool
-	PublicBase  string
-	CorsOrigins string
+	Endpoint       string
+	PublicEndpoint string
+	Region         string
+	AccessKey      string
+	SecretKey      string
+	Bucket         string
+	UseSSL         bool
+	PublicBase     string
+	CorsOrigins    string
 }
 
 type ImageStore struct {
@@ -57,6 +58,14 @@ func NewImageStore(ctx context.Context, cfg Config) (*ImageStore, error) {
 		options.BaseEndpoint = aws.String(baseEndpoint)
 		options.UsePathStyle = true
 	})
+	publicEndpoint := cfg.PublicEndpoint
+	if publicEndpoint == "" {
+		publicEndpoint = cfg.Endpoint
+	}
+	publicClient := s3.NewFromConfig(awsCfg, func(options *s3.Options) {
+		options.BaseEndpoint = aws.String(endpointURL(publicEndpoint, cfg.UseSSL))
+		options.UsePathStyle = true
+	})
 	if _, err := client.HeadBucket(ctx, &s3.HeadBucketInput{Bucket: aws.String(cfg.Bucket)}); err != nil {
 		if _, createErr := client.CreateBucket(ctx, &s3.CreateBucketInput{Bucket: aws.String(cfg.Bucket)}); createErr != nil {
 			return nil, fmt.Errorf("ensure bucket: %w", createErr)
@@ -80,7 +89,7 @@ func NewImageStore(ctx context.Context, cfg Config) (*ImageStore, error) {
 	}
 	return &ImageStore{
 		client:     client,
-		presigner:  s3.NewPresignClient(client),
+		presigner:  s3.NewPresignClient(publicClient),
 		bucket:     cfg.Bucket,
 		publicBase: strings.TrimRight(cfg.PublicBase, "/"),
 	}, nil

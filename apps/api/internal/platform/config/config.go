@@ -20,6 +20,7 @@ const (
 	defaultRefreshTTL        = 720
 	defaultCookieSecure      = false
 	defaultS3Endpoint        = "localhost:3900"
+	defaultS3PublicEndpoint  = "http://localhost:3900"
 	defaultS3Region          = "garage"
 	defaultS3AccessKey       = "GK000000000000000000000000"
 	defaultS3SecretKey       = "0000000000000000000000000000000000000000000000000000000000000000"
@@ -42,6 +43,7 @@ type Config struct {
 	RefreshTTLHours   int
 	CookieSecure      bool
 	S3Endpoint        string
+	S3PublicEndpoint  string
 	S3Region          string
 	S3AccessKey       string
 	S3SecretKey       string
@@ -67,6 +69,7 @@ func Load() (Config, error) {
 		RefreshTTLHours:   getenvInt("JWT_REFRESH_TTL_HOURS", defaultRefreshTTL),
 		CookieSecure:      getenvBool("COOKIE_SECURE", defaultCookieSecure),
 		S3Endpoint:        getenv("S3_ENDPOINT", defaultS3Endpoint),
+		S3PublicEndpoint:  getenv("S3_PUBLIC_ENDPOINT", defaultS3PublicEndpoint),
 		S3Region:          getenv("S3_REGION", defaultS3Region),
 		S3AccessKey:       getenv("S3_ACCESS_KEY", defaultS3AccessKey),
 		S3SecretKey:       getenv("S3_SECRET_KEY", defaultS3SecretKey),

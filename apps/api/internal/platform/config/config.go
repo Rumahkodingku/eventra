@@ -23,6 +23,7 @@ const (
 	defaultS3Bucket          = "eventra"
 	defaultS3PublicBase      = "http://localhost:9000/eventra"
 	defaultMockPaymentSecret = "mock-payment-secret"
+	defaultDocsEnabled       = true
 )
 
 type Config struct {
@@ -43,6 +44,7 @@ type Config struct {
 	S3UseSSL          bool
 	S3PublicBase      string
 	MockPaymentSecret string
+	DocsEnabled       bool
 }
 
 func Load() (Config, error) {
@@ -64,6 +66,7 @@ func Load() (Config, error) {
 		S3UseSSL:          getenvBool("S3_USE_SSL", false),
 		S3PublicBase:      getenv("S3_PUBLIC_BASE", defaultS3PublicBase),
 		MockPaymentSecret: getenv("MOCK_PAYMENT_SECRET", defaultMockPaymentSecret),
+		DocsEnabled:       getenvBool("API_DOCS_ENABLED", defaultDocsEnabled),
 	}
 
 	if err := cfg.Validate(); err != nil {

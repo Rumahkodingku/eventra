@@ -24,6 +24,7 @@ import (
 	"github.com/eventra/eventra/apps/api/internal/modules/review"
 	"github.com/eventra/eventra/apps/api/internal/modules/ticket"
 	"github.com/eventra/eventra/apps/api/internal/modules/wishlist"
+	"github.com/eventra/eventra/apps/api/internal/platform/docs"
 	"github.com/eventra/eventra/apps/api/internal/platform/observability"
 )
 
@@ -90,6 +91,7 @@ func NewRouter(cfg Config, log *slog.Logger, deps Dependencies) *gin.Engine {
 	}
 	v1.GET("/health/live", live)
 	v1.GET("/health/ready", ready(deps))
+	docs.NewHandler(docs.Config{Enabled: cfg.DocsEnabled}).RegisterRoutes(router)
 	router.GET("/metrics", func(c *gin.Context) {
 		c.Header("Content-Type", "text/plain; version=0.0.4; charset=utf-8")
 		output := observability.Render()
@@ -111,7 +113,8 @@ func NewRouter(cfg Config, log *slog.Logger, deps Dependencies) *gin.Engine {
 }
 
 type Config struct {
-	WebOrigin string
+	WebOrigin   string
+	DocsEnabled bool
 }
 
 func live(c *gin.Context) {

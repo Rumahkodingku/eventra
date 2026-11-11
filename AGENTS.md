@@ -16,6 +16,9 @@ Eventra is a fullstack demo: Next.js `apps/web` plus Go/MySQL API `apps/api`. Fr
 - `go test -tags=integration ./...` — MySQL integration tests; set `TEST_INVENTORY_DATABASE_URL` and `TEST_ENGAGEMENT_DATABASE_URL`.
 - `go vet ./...` — Go vet.
 - `npm run openapi:lint`, `npm run api-client:generate`, `npm run api-client:typecheck` — contract checks.
+- `npm run docs:build` — regenerate the committed Scalar API Reference asset from `@scalar/api-reference`.
+- `npm run docs:check` — regenerate and fail if the committed asset drifts.
+- API docs run at `GET /docs`; OpenAPI is served at `GET /openapi.yaml`. Set `API_DOCS_ENABLED=false` to disable all three docs routes (including `/docs/scalar.js`).
 
 Local infrastructure:
 
@@ -34,6 +37,8 @@ APP_ENV=development DATABASE_URL='eventra:eventra@tcp(127.0.0.1:3307)/eventra?pa
 - TanStack Query hooks in `apps/web/src/services/hooks` are the UI data facade. Do not call the generated API client directly from page components; add a repository method or hook instead.
 - Go modules live in `apps/api/internal/modules`: `identity`, `catalog`, `inventory`, `cart`, `order`, `ticket`, `notification`, `review`, `wishlist`, `analytics`, `organization`. Shared platform code is in `apps/api/internal/platform`.
 - OpenAPI is the contract in `apps/api/openapi/openapi.yaml`; the generated client is `packages/api-client/src/generated/schema.ts`. Regenerate after contract changes.
+- API docs are self-hosted: `apps/api/internal/platform/docs` embeds `index.html`, `assets/scalar.js`, and the OpenAPI YAML from `apps/api/openapi`. Scalar reads the `eventra_csrf` cookie and sends `X-CSRF-Token`; docs are served from the API origin so auth cookies work.
+- Do not edit `assets/scalar.js` by hand. Run `npm run docs:build`; CI runs `docs:check`. Bump the pinned `@scalar/api-reference` version intentionally.
 - Tailwind v4 is wired through `@tailwindcss/turbopack`; there is no `tailwind.config`. Tokens are CSS variables in `apps/web/src/app/globals.css`. Use semantic utilities (`bg-canvas`, `text-ink`, `text-muted`, `border-line`, `bg-brand`, `text-danger`, ...).
 - i18n uses `next-intl` with messages in `apps/web/src/i18n/messages.ts`. `en` is typed against `id`, so add every new key to both.
 - Next.js 16 cache components are enabled (`cacheComponents: true`, `partialPrefetching`). The organizer layout sets `export const instant = false`. In server pages, `params` and `searchParams` are Promises.

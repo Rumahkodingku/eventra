@@ -30,6 +30,32 @@ func TestLive(t *testing.T) {
 	}
 }
 
+func TestDocsRouteCanBeDisabled(t *testing.T) {
+	router := NewRouter(
+		Config{WebOrigin: "http://localhost:3000", DocsEnabled: false},
+		slog.New(slog.NewTextHandler(io.Discard, nil)),
+		Dependencies{},
+	)
+	res := httptest.NewRecorder()
+	router.ServeHTTP(res, httptest.NewRequest(http.MethodGet, "/docs", nil))
+	if res.Code != http.StatusNotFound {
+		t.Fatalf("status = %d, want %d", res.Code, http.StatusNotFound)
+	}
+}
+
+func TestDocsRouteEnabled(t *testing.T) {
+	router := NewRouter(
+		Config{WebOrigin: "http://localhost:3000", DocsEnabled: true},
+		slog.New(slog.NewTextHandler(io.Discard, nil)),
+		Dependencies{},
+	)
+	res := httptest.NewRecorder()
+	router.ServeHTTP(res, httptest.NewRequest(http.MethodGet, "/docs", nil))
+	if res.Code != http.StatusOK {
+		t.Fatalf("status = %d, want %d", res.Code, http.StatusOK)
+	}
+}
+
 func TestReadyWithoutDependencies(t *testing.T) {
 	req := httptest.NewRequest(http.MethodGet, "/api/v1/health/ready", nil)
 	res := httptest.NewRecorder()

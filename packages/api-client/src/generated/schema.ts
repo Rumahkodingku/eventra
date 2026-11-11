@@ -1007,15 +1007,25 @@ export interface components {
             created_at?: string;
         };
         LoginRequest: {
-            /** Format: email */
+            /**
+             * Format: email
+             * @example customer@demo.local
+             */
             email: string;
+            /** @example demo12345 */
             password: string;
         };
         RegisterRequest: {
+            /** @example Alya Putri */
             name: string;
-            /** Format: email */
+            /**
+             * Format: email
+             * @example new-user@example.com
+             */
             email: string;
+            /** @example +6281200000000 */
             phone?: string;
+            /** @example demo12345 */
             password: string;
         };
         AuthResponse: {
@@ -1050,7 +1060,17 @@ export interface components {
             code: string;
         };
         QuoteRequest: {
+            /** @example evt-01 */
             event_id: string;
+            /**
+             * @example [
+             *       {
+             *         "ticket_type_id": "tt-evt-01-early",
+             *         "quantity": 1,
+             *         "seat_ids": []
+             *       }
+             *     ]
+             */
             items: {
                 ticket_type_id: string;
                 quantity: number;
@@ -1085,21 +1105,33 @@ export interface components {
             expires_at: string;
         };
         Buyer: {
+            /** @example Alya Putri */
             name: string;
-            /** Format: email */
+            /**
+             * Format: email
+             * @example customer@demo.local
+             */
             email: string;
+            /** @example +6281200000001 */
             phone: string;
         };
         AttendeeInput: {
+            /** @example Alya Putri */
             full_name: string;
-            /** Format: email */
+            /**
+             * Format: email
+             * @example customer@demo.local
+             */
             email: string;
             phone?: string;
         };
         CreateOrderRequest: {
+            /** @example 01J00000000000000000000000 */
             reservation_id: string;
+            /** @example EVENTRA10 */
             promo_code?: string;
             buyer: components["schemas"]["Buyer"];
+            /** @example qris */
             payment_method: string;
             items?: {
                 ticket_type_id: string;
@@ -1360,6 +1392,7 @@ export interface components {
             public_url: string;
         };
         CheckInRequest: {
+            /** @example TKT-01J0000000000000000000000 */
             token: string;
         };
         CheckInResponse: {

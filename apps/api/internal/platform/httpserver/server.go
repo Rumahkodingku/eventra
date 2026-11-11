@@ -11,8 +11,9 @@ import (
 )
 
 type ServerConfig struct {
-	HTTPAddr  string
-	WebOrigin string
+	HTTPAddr    string
+	WebOrigin   string
+	DocsEnabled bool
 }
 
 type Server struct {
@@ -22,7 +23,7 @@ type Server struct {
 }
 
 func NewServer(cfg ServerConfig, log *slog.Logger, deps Dependencies) *Server {
-	router := NewRouter(Config{WebOrigin: cfg.WebOrigin}, log, deps)
+	router := NewRouter(Config{WebOrigin: cfg.WebOrigin, DocsEnabled: cfg.DocsEnabled}, log, deps)
 	return &Server{
 		http: &http.Server{
 			Addr:              cfg.HTTPAddr,

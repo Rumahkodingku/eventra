@@ -94,7 +94,7 @@ func main() {
 	organizationHandler := organization.NewHandler(organization.NewService(db))
 
 	server := httpserver.NewServer(
-		httpserver.ServerConfig{HTTPAddr: cfg.HTTPAddr, WebOrigin: cfg.WebOrigin},
+		httpserver.ServerConfig{HTTPAddr: cfg.HTTPAddr, WebOrigin: cfg.WebOrigin, DocsEnabled: cfg.DocsEnabled},
 		log,
 		httpserver.Dependencies{
 			DB: db, Redis: redisClient, Auth: authHandler,

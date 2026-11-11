@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Eventra API Reference</title>
+    <style>
+      body {
+        margin: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script src="/docs/scalar.js?v={{.Version}}"></script>
+    <script>
+      const csrfCookie = () => {
+        const entry = document.cookie
+          .split("; ")
+          .find((item) => item.startsWith("eventra_csrf="));
+        return entry
+          ? decodeURIComponent(entry.slice("eventra_csrf=".length))
+          : "";
+      };
+
+      window.Scalar.createApiReference("#app", {
+        url: "/openapi.yaml",
+        telemetry: false,
+        withDefaultFonts: false,
+        customFetch: (input, init) =>
+          window.fetch(input, { ...init, credentials: "include" }),
+        onBeforeRequest: ({ requestBuilder }) => {
+          const csrf = csrfCookie();
+          if (csrf) requestBuilder.headers.set("X-CSRF-Token", csrf);
+        },
+      });
+    </script>
+  </body>
+</html>

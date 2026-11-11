@@ -9,6 +9,7 @@ func TestLoadDefaults(t *testing.T) {
 	t.Setenv("DATABASE_URL", "")
 	t.Setenv("REDIS_URL", "")
 	t.Setenv("LOG_LEVEL", "")
+	t.Setenv("API_DOCS_ENABLED", "")
 
 	cfg, err := Load()
 	if err != nil {
@@ -19,6 +20,24 @@ func TestLoadDefaults(t *testing.T) {
 	}
 	if cfg.WebOrigin != defaultWebOrigin {
 		t.Fatalf("WebOrigin = %q, want %q", cfg.WebOrigin, defaultWebOrigin)
+	}
+	if !cfg.DocsEnabled {
+		t.Fatal("DocsEnabled = false, want true by default")
+	}
+}
+
+func TestDocsCanBeDisabled(t *testing.T) {
+	t.Setenv("APP_ENV", "development")
+	t.Setenv("DATABASE_URL", defaultDatabaseURL)
+	t.Setenv("REDIS_URL", defaultRedisURL)
+	t.Setenv("API_DOCS_ENABLED", "false")
+
+	cfg, err := Load()
+	if err != nil {
+		t.Fatalf("Load() error = %v", err)
+	}
+	if cfg.DocsEnabled {
+		t.Fatal("DocsEnabled = true, want false")
 	}
 }
 

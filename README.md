@@ -18,6 +18,7 @@ Eventra is a premium, responsive event discovery and ticketing demo for Rumah Ko
 - TanStack Query for API-backed data
 - `next-intl` for Indonesian/English UI copy (no locale prefix)
 - Recharts for organizer analytics
+- Scalar API Reference for self-hosted interactive API docs
 - `react-qr-code` for opaque demo ticket QR codes
 - Sonner for toast feedback
 - Vitest and Playwright for tests
@@ -46,7 +47,7 @@ cd apps/web
 NEXT_PUBLIC_API_BASE_URL=http://localhost:8080/api/v1 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000). API mode is the default. For the local mock showcase, set `NEXT_PUBLIC_API_MODE=mock`.
+Open [http://localhost:3000](http://localhost:3000). API reference: [http://localhost:8080/docs](http://localhost:8080/docs). API mode is the default. For the local mock showcase, set `NEXT_PUBLIC_API_MODE=mock`.
 
 Production build:
 
@@ -57,9 +58,9 @@ npm start
 
 ## Demo accounts
 
-| Role | Email | Password |
-| --- | --- | --- |
-| Customer | `customer@demo.local` | `demo12345` |
+| Role      | Email                  | Password    |
+| --------- | ---------------------- | ----------- |
+| Customer  | `customer@demo.local`  | `demo12345` |
 | Organizer | `organizer@demo.local` | `demo12345` |
 
 The login page also has one-click demo buttons. These are public showcase credentials. Never reuse them in a real application.
@@ -119,9 +120,12 @@ npm run lint
 npm run test:run
 npm run test:e2e
 npm run test:e2e:api
+npm run docs:check
 ```
 
-- Mock E2E starts Next.js with `NEXT_PUBLIC_API_MODE=mock`.
+- API reference is served by the Go API at `/docs`; the contract is `/openapi.yaml`.
+- `npm run docs:build` regenerates the committed Scalar asset from the pinned npm dependency.
+- `API_DOCS_ENABLED=false` disables `/docs`, `/openapi.yaml`, and the asset.- Mock E2E starts Next.js with `NEXT_PUBLIC_API_MODE=mock`.
 - API E2E resets `eventra_e2e`, seeds MySQL, starts the Go API, and covers discovery, organizer event CRUD, customer purchase, wallet, notifications, wishlist, reviews, settings, and check-in.
 - Go integration tests require MySQL: `TEST_INVENTORY_DATABASE_URL` and `TEST_ENGAGEMENT_DATABASE_URL`.
 - Firefox smoke/logo coverage is available with `npm run test:e2e:firefox`.

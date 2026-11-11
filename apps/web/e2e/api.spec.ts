@@ -1,5 +1,14 @@
 import { expect, test } from "@playwright/test";
 
+test("API reference renders from the API origin", async ({ page }) => {
+  await page.goto("http://localhost:18080/docs");
+  await expect(page.getByText("Eventra API").first()).toBeVisible({
+    timeout: 20_000,
+  });
+  await expect(page.getByText("OpenAPI 3.1.0").first()).toBeVisible();
+  await expect(page.getByText(/HealthLive/).first()).toBeVisible();
+});
+
 test("guest discovers the API-backed catalog", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByRole("heading", { level: 1 })).toContainText(

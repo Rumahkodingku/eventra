@@ -2,21 +2,66 @@ openapi: 3.1.0
 info:
   title: Eventra API
   version: 1.0.0
-  description: Contract-first API for the Eventra fullstack migration.
+  description: |
+    Contract-first API for Eventra. This reference is generated from the same
+    `openapi.yaml` used by the generated TypeScript client and contract tests.
+
+    ## Try requests
+
+    Docs are served by the API on the same origin, so browser cookies are sent
+    automatically. After `POST /auth/login`, Scalar reads the non-HttpOnly
+    `eventra_csrf` cookie and sends it as `X-CSRF-Token` on mutating requests.
+
+    Demo accounts:
+
+    - Customer: `customer@demo.local` / `demo12345`
+    - Organizer: `organizer@demo.local` / `demo12345`
+
+    ## Rules
+
+    - All money is an integer amount in IDR.
+    - Checkout is single-event per order.
+    - `Idempotency-Key` is required on `POST /checkout/orders`. Reusing a key
+      with a different payload returns `409 IDEMPOTENCY_CONFLICT`.
+    - Errors use the envelope below. `request_id` matches the API log entry.
+
+    ```json
+    {
+      "error": {
+        "code": "VALIDATION_FAILED",
+        "message": "Invalid request.",
+        "request_id": "req_..."
+      }
+    }
+    ```
+
+    ## Pagination
+
+    List endpoints return `items` and `next_cursor`. The current implementation
+    returns an empty `next_cursor`; consumers must still treat it as optional.
 servers:
   - url: /api/v1
     description: Same-site API proxy
 security: []
 tags:
   - name: Health
+    description: Liveness and readiness probes.
   - name: Auth
+    description: Registration, login, refresh, logout, profile, and guest principals.
   - name: Catalog
+    description: Public events, categories, venues, organizers, and ticket types.
   - name: Cart
+    description: Server cart and promo validation.
   - name: Checkout
+    description: Authoritative quote and inventory reservation.
   - name: Orders
+    description: Order creation, history, attendees, and payment webhooks.
   - name: Tickets
+    description: Ticket wallet and organizer event-scoped check-in.
   - name: Organizer
+    description: Organization-scoped event management, analytics, and settings.
   - name: Account
+    description: Notifications, reviews, and wishlist for the current principal.
 components:
   securitySchemes:
     accessCookie:
@@ -34,6 +79,7 @@ components:
       required: true
       schema:
         type: string
+        example: 01J00000000000000000000000
     Cursor:
       name: cursor
       in: query
@@ -412,21 +458,27 @@ components:
         email:
           type: string
           format: email
+          example: customer@demo.local
         password:
           type: string
+          example: demo12345
     RegisterRequest:
       type: object
       required: [name, email, password]
       properties:
         name:
           type: string
+          example: Alya Putri
         email:
           type: string
           format: email
+          example: new-user@example.com
         phone:
           type: string
+          example: "+6281200000000"
         password:
           type: string
+          example: demo12345
     AuthResponse:
       type: object
       required: [user]
@@ -502,8 +554,13 @@ components:
       properties:
         event_id:
           type: string
+          example: evt-01
         items:
           type: array
+          example:
+            - ticket_type_id: tt-evt-01-early
+              quantity: 1
+              seat_ids: []
           items:
             type: object
             required: [ticket_type_id, quantity, seat_ids]
@@ -571,20 +628,25 @@ components:
       properties:
         name:
           type: string
+          example: Alya Putri
         email:
           type: string
           format: email
+          example: customer@demo.local
         phone:
           type: string
+          example: "+6281200000001"
     AttendeeInput:
       type: object
       required: [full_name, email]
       properties:
         full_name:
           type: string
+          example: Alya Putri
         email:
           type: string
           format: email
+          example: customer@demo.local
         phone:
           type: string
     CreateOrderRequest:
@@ -593,12 +655,15 @@ components:
       properties:
         reservation_id:
           type: string
+          example: 01J00000000000000000000000
         promo_code:
           type: string
+          example: EVENTRA10
         buyer:
           $ref: "#/components/schemas/Buyer"
         payment_method:
           type: string
+          example: qris
         items:
           type: array
           items:
@@ -1119,6 +1184,7 @@ components:
       properties:
         token:
           type: string
+          example: TKT-01J0000000000000000000000
     CheckInResponse:
       type: object
       required: [ok, ticket_id, status]

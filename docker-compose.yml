@@ -70,6 +70,7 @@ services:
       S3_USE_SSL: "false"
       S3_PUBLIC_BASE: http://localhost:9000/eventra
       MOCK_PAYMENT_SECRET: mock-payment-secret
+      API_DOCS_ENABLED: "true"
     ports:
       - "127.0.0.1:${API_PORT:-8080}:8080"
     depends_on:

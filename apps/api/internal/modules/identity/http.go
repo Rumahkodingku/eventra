@@ -189,6 +189,10 @@ func (h *Handler) requireAuth() gin.HandlerFunc {
 	}
 }
 
+func (h *Handler) RequireAuth() gin.HandlerFunc {
+	return h.requireAuth()
+}
+
 func (h *Handler) RequirePermission(permission string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userID := c.GetString("user_id")

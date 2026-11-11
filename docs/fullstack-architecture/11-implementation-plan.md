@@ -1553,39 +1553,39 @@ Phase 5.
 
 #### Task 6.1 — Catalog schema
 
-- [ ] Create categories, venues, layouts, sections, rows, seats, events, event tags, ticket types.
-- [ ] Add indexes from `docs/05`.
-- [ ] Add event status and ticketing mode enums.
-- [ ] Add organization ownership.
+- [x] Create categories, venues, layouts, sections, rows, seats, events, event tags, ticket types.
+- [x] Add indexes from `docs/05`.
+- [x] Add event status and ticketing mode enums.
+- [x] Add organization ownership.
 
 **Verification:** migration up/down; constraint tests.
 
 #### Task 6.2 — Seed importer
 
-- [ ] Convert current seed catalog into deterministic database seed.
-- [ ] Preserve 8 categories, 10 venues, 24 events, layouts, and ticket types.
-- [ ] Preserve event slugs used by E2E.
-- [ ] Make seed idempotent.
-- [ ] Add reset/re-seed command.
+- [x] Convert current seed catalog into deterministic database seed.
+- [x] Preserve 8 categories, 10 venues, 24 events, layouts, and ticket types.
+- [x] Preserve event slugs used by E2E.
+- [x] Make seed idempotent.
+- [x] Add reset/re-seed command.
 
 **Verification:** seed twice produces no duplicates; counts match.
 
 #### Task 6.3 — Public catalog API
 
-- [ ] `GET /categories`, `/events`, `/events/{slug}`, `/events/{eventId}/ticket-types`, `/venues/{venueId}`.
-- [ ] Add filters, sort allowlist, cursor pagination.
-- [ ] Exclude draft/ended events from public discovery as before.
-- [ ] Add cache headers/Redis cache for public reads.
+- [x] `GET /categories`, `/events`, `/events/{slug}`, `/events/{eventId}/ticket-types`, `/venues/{venueId}`.
+- [x] Add filters, sort allowlist, cursor pagination.
+- [x] Exclude draft/ended events from public discovery as before.
+- [x] Add cache headers/Redis cache for public reads.
 
 **Verification:** filter/sort/pagination tests; response matches seed.
 
 #### Task 6.4 — Organizer event CRUD
 
-- [ ] Create/list/get/update events scoped to organization.
-- [ ] Add publish/pause/cancel action endpoints.
-- [ ] Enforce event status state machine.
-- [ ] Enforce ownership on every mutation.
-- [ ] Prevent deletion with confirmed orders; use cancel policy instead.
+- [x] Create/list/get/update events scoped to organization.
+- [x] Add publish/pause/cancel action endpoints.
+- [x] Enforce event status state machine.
+- [x] Enforce ownership on every mutation.
+- [x] Prevent deletion with confirmed orders; use cancel policy instead.
 
 **Verification:** ownership 403 tests; invalid transition 409; delete guard.
 

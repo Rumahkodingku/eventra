@@ -78,6 +78,14 @@ jobs:
           REDIS_URL: redis://127.0.0.1:6379/0
         run: go run ./cmd/seed
 
+      - name: Seed catalog
+        working-directory: apps/api
+        env:
+          APP_ENV: development
+          DATABASE_URL: eventra:eventra@tcp(127.0.0.1:3306)/eventra?parseTime=true&charset=utf8mb4&loc=UTC
+          REDIS_URL: redis://127.0.0.1:6379/0
+        run: go run ./cmd/seed-catalog
+
       - name: Integration tests
         working-directory: apps/api
         env:

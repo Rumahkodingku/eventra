@@ -9,6 +9,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/eventra/eventra/apps/api/internal/modules/catalog"
 	"github.com/eventra/eventra/apps/api/internal/modules/identity"
 	"github.com/eventra/eventra/apps/api/internal/platform/cache"
 	"github.com/eventra/eventra/apps/api/internal/platform/config"
@@ -59,11 +60,14 @@ func main() {
 		RefreshTTL: time.Duration(cfg.RefreshTTLHours) * time.Hour,
 	})
 	authHandler := identity.NewHandler(authService, cfg.CookieSecure)
+	catalogHandler := catalog.NewHandler(catalog.NewService(db))
 
 	server := httpserver.NewServer(
 		httpserver.ServerConfig{HTTPAddr: cfg.HTTPAddr, WebOrigin: cfg.WebOrigin},
 		log,
-		httpserver.Dependencies{DB: db, Redis: redisClient, Auth: authHandler},
+		httpserver.Dependencies{
+			DB: db, Redis: redisClient, Auth: authHandler, Catalog: catalogHandler,
+		},
 	)
 
 	if err := server.Run(ctx); err != nil && !errors.Is(err, context.Canceled) {

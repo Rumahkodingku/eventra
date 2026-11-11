@@ -28,6 +28,7 @@
   "devDependencies": {
     "@redocly/cli": "^2.77.0",
     "openapi-typescript": "^7.13.0",
+    "tsx": "^4.23.15",
     "turbo": "2.11.10",
     "yaml": "^2.8.1"
   }

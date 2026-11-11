@@ -32,9 +32,9 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
 
-  const submit = (event: React.FormEvent) => {
+  const submit = async (event: React.FormEvent) => {
     event.preventDefault();
-    const result = login(email, password);
+    const result = await login(email, password);
     if (!result.ok) {
       setError(t("auth.invalid"));
       return;
@@ -47,8 +47,8 @@ export default function LoginPage() {
     );
   };
 
-  const demo = (role: "CUSTOMER" | "ORGANIZER") => {
-    loginDemo(role);
+  const demo = async (role: "CUSTOMER" | "ORGANIZER") => {
+    await loginDemo(role);
     toast.success(
       t("auth.welcome", {
         name:

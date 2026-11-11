@@ -1602,10 +1602,10 @@ Phase 5.
 
 #### Task 6.6 — Frontend adapters
 
-- [ ] Replace event/category/venue mock adapter with API adapter.
-- [ ] Replace organizer event mock adapter with API adapter.
-- [ ] Keep current UI and route behavior.
-- [ ] Add loading/error/empty states for API failures.
+- [x] Replace event/category/venue mock adapter with API adapter.
+- [x] Replace organizer event mock adapter with API adapter.
+- [x] Keep current UI and route behavior.
+- [x] Add loading/error/empty states for API failures.
 
 **Verification:** discovery and organizer E2E pass against API.
 

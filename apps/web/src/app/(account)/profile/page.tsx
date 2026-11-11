@@ -81,13 +81,13 @@ export default function ProfilePage() {
       <div className="mt-8 grid gap-6 lg:grid-cols-[1fr_300px]">
         <form
           className="rounded-3xl border border-line bg-surface p-5 sm:p-6"
-          onSubmit={(event) => {
+          onSubmit={async (event) => {
             event.preventDefault();
             if (!name.trim() || !email.trim()) {
               toast.error(t("errors.required"));
               return;
             }
-            updateProfile({
+            await updateProfile({
               name: name.trim(),
               email: email.trim(),
               phone: phone.trim(),

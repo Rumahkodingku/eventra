@@ -17,6 +17,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SectionHeading } from "@/components/ui/section-heading";
+import { Skeleton } from "@/components/ui/skeleton";
 import { CategoryTile } from "@/features/discovery/category-tile";
 import { useHydrated } from "@/hooks/use-hydrated";
 import { cn } from "@/lib/cn";
@@ -64,6 +65,8 @@ export function HomePage() {
   const hydrated = useHydrated();
   const { categories, venues } = useCatalog();
   const events = useEventStore((state) => state.events);
+  const eventsLoading = useEventStore((state) => state.isLoading);
+  const eventsError = useEventStore((state) => state.error);
   const city = usePreferencesStore((state) => state.city);
   const setCity = usePreferencesStore((state) => state.setCity);
   const locale = usePreferencesStore((state) => state.locale);
@@ -100,6 +103,28 @@ export function HomePage() {
     .map((id) => events.find((event) => event.id === id))
     .filter((event): event is NonNullable<typeof event> => Boolean(event))
     .slice(0, 4);
+
+  if (eventsLoading) {
+    return (
+      <div className="container-page section-space space-y-5">
+        <Skeleton className="h-20 w-2/3" />
+        <Skeleton className="h-[420px] rounded-3xl" />
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {[1, 2, 3, 4, 5, 6].map((row) => (
+            <Skeleton key={row} className="h-72 rounded-2xl" />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (eventsError) {
+    return (
+      <div className="container-page section-space">
+        <p className="text-muted">{eventsError}</p>
+      </div>
+    );
+  }
 
   if (!featured) {
     return (

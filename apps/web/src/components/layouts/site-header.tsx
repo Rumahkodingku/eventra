@@ -80,8 +80,8 @@ export function SiteHeader() {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, []);
 
-  const signOut = () => {
-    logout();
+  const signOut = async () => {
+    await logout();
     toast.success(t("nav.logout"));
     router.push("/");
   };

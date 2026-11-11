@@ -82,9 +82,9 @@ export function OrganizerShell({ children }: { children: React.ReactNode }) {
           <div className="mt-6 space-y-2">
             <Button
               className="w-full"
-              onClick={() => {
-                if (user) logout();
-                loginDemo("ORGANIZER");
+              onClick={async () => {
+                if (user) await logout();
+                await loginDemo("ORGANIZER");
                 toast.success(t("auth.organizerDemo"));
                 router.refresh();
               }}
@@ -153,8 +153,8 @@ export function OrganizerShell({ children }: { children: React.ReactNode }) {
           </Link>
           <button
             type="button"
-            onClick={() => {
-              logout();
+            onClick={async () => {
+              await logout();
               toast.success(t("nav.logout"));
               router.push("/");
             }}

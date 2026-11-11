@@ -277,6 +277,47 @@ components:
           type: boolean
         is_early_bird:
           type: boolean
+        gallery:
+          type: array
+          items:
+            type: string
+        tags:
+          type: array
+          items:
+            type: string
+        highlights:
+          type: array
+          items:
+            type: string
+        schedule:
+          type: array
+          items:
+            type: object
+            properties:
+              time:
+                type: string
+              title:
+                type: string
+              description:
+                type: string
+        terms:
+          type: array
+          items:
+            type: string
+        age_note:
+          type: string
+        accessibility_note:
+          type: string
+        layout_id:
+          type: string
+        seat_layout:
+          $ref: "#/components/schemas/VenueLayout"
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
         ticket_types:
           type: array
           items:
@@ -839,16 +880,31 @@ components:
           type: string
         status:
           type: string
-          enum: [DRAFT, PUBLISHED]
+          enum: [DRAFT, PUBLISHED, PAUSED, ENDED, CANCELLED]
         base_price:
           type: integer
           format: int64
         subcategory:
           type: string
+        gallery:
+          type: array
+          items:
+            type: string
         highlights:
           type: array
           items:
             type: string
+        schedule:
+          type: array
+          items:
+            type: object
+            properties:
+              time:
+                type: string
+              title:
+                type: string
+              description:
+                type: string
         terms:
           type: array
           items:
@@ -857,6 +913,45 @@ components:
           type: string
         accessibility_note:
           type: string
+        ticket_types:
+          type: array
+          items:
+            type: object
+            required: [id, name, price, quota]
+            properties:
+              id:
+                type: string
+              name:
+                type: string
+              description:
+                type: string
+              price:
+                type: integer
+                format: int64
+              quota:
+                type: integer
+              min_per_order:
+                type: integer
+              max_per_order:
+                type: integer
+              sales_start_at:
+                type: string
+                format: date-time
+              sales_end_at:
+                type: string
+                format: date-time
+              benefits:
+                type: array
+                items:
+                  type: string
+              status:
+                type: string
+                enum: [ACTIVE, INACTIVE, SOLD_OUT]
+              kind:
+                type: string
+                enum: [GENERAL_ADMISSION, SEATED]
+              tier_key:
+                type: string
     OrganizerEventUpdate:
       allOf:
         - $ref: "#/components/schemas/OrganizerEventCreate"
@@ -1079,6 +1174,20 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/Category"
+  /organizers:
+    get:
+      summary: List organizers
+      tags: [Catalog]
+      operationId: listOrganizers
+      responses:
+        "200":
+          description: Organizers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Organizer"
   /events:
     get:
       summary: ListEvents
@@ -1169,6 +1278,20 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/TicketTypeList"
+  /venues:
+    get:
+      summary: ListVenues
+      tags: [Catalog]
+      operationId: listVenues
+      responses:
+        "200":
+          description: Venues
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Venue"
   /venues/{venueId}:
     get:
       summary: GetVenue
@@ -1546,7 +1669,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/OrganizerEventSummary"
+                  $ref: "#/components/schemas/EventDetail"
     post:
       summary: CreateOrganizerEvent
       tags: [Organizer]
@@ -1565,7 +1688,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/OrganizerEventSummary"
+                $ref: "#/components/schemas/EventDetail"
   /organizer/events/{eventId}:
     get:
       summary: GetOrganizerEvent
@@ -1585,7 +1708,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/OrganizerEventSummary"
+                $ref: "#/components/schemas/EventDetail"
+        "404":
+          description: Event not found
     patch:
       summary: UpdateOrganizerEvent
       tags: [Organizer]
@@ -1610,7 +1735,24 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/OrganizerEventSummary"
+                $ref: "#/components/schemas/EventDetail"
+    delete:
+      summary: DeleteOrganizerEvent
+      tags: [Organizer]
+      operationId: deleteOrganizerEvent
+      security:
+        - accessCookie: []
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Event deleted
+        "409":
+          description: Event has orders; cancel it instead
   /organizer/uploads:
     post:
       summary: Create a presigned image upload

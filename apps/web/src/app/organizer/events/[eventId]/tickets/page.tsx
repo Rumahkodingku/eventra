@@ -120,7 +120,7 @@ export default function OrganizerTicketConfigPage() {
     setTickets((current) => [...current, newTicket]);
   };
 
-  const save = () => {
+  const save = async () => {
     const nextErrors: Record<string, string> = {};
     tickets.forEach((ticket) => {
       if (!ticket.name.trim())
@@ -155,7 +155,7 @@ export default function OrganizerTicketConfigPage() {
     }
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length) return;
-    updateEvent({
+    await updateEvent({
       ...event,
       ticketTypes: tickets,
       layoutId: layout?.id,
@@ -163,7 +163,6 @@ export default function OrganizerTicketConfigPage() {
     });
     toast.success(t("organizer.ticketSaved"));
   };
-
   const mapSection = (sectionTierKey: string, ticketId: string) => {
     setTickets((current) => {
       if (!ticketId) {
@@ -236,7 +235,7 @@ export default function OrganizerTicketConfigPage() {
               <ArrowLeft className="size-4" /> {t("common.back")}
             </Link>
           </Button>
-          <Button size="sm" onClick={save}>
+          <Button size="sm" onClick={() => void save()}>
             <Save className="size-4" /> {t("common.save")}
           </Button>
         </div>
@@ -628,7 +627,7 @@ export default function OrganizerTicketConfigPage() {
         <Button variant="outline" onClick={addTicket}>
           <Plus className="size-4" /> {t("organizer.addTicket")}
         </Button>
-        <Button onClick={save}>
+        <Button onClick={() => void save()}>
           <Save className="size-4" /> {t("common.save")}
         </Button>
       </div>

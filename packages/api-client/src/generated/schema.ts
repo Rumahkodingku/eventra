@@ -174,6 +174,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/organizers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List organizers */
+        get: operations["listOrganizers"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/events": {
         parameters: {
             query?: never;
@@ -217,6 +234,23 @@ export interface paths {
         };
         /** ListTicketTypes */
         get: operations["listTicketTypes"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/venues": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** ListVenues */
+        get: operations["listVenues"];
         put?: never;
         post?: never;
         delete?: never;
@@ -496,7 +530,8 @@ export interface paths {
         get: operations["getOrganizerEvent"];
         put?: never;
         post?: never;
-        delete?: never;
+        /** DeleteOrganizerEvent */
+        delete: operations["deleteOrganizerEvent"];
         options?: never;
         head?: never;
         /** UpdateOrganizerEvent */
@@ -743,6 +778,23 @@ export interface components {
             is_recommended?: boolean;
             limited_availability?: boolean;
             is_early_bird?: boolean;
+            gallery?: string[];
+            tags?: string[];
+            highlights?: string[];
+            schedule?: {
+                time?: string;
+                title?: string;
+                description?: string;
+            }[];
+            terms?: string[];
+            age_note?: string;
+            accessibility_note?: string;
+            layout_id?: string;
+            seat_layout?: components["schemas"]["VenueLayout"];
+            /** Format: date-time */
+            created_at?: string;
+            /** Format: date-time */
+            updated_at?: string;
             ticket_types: components["schemas"]["TicketType"][];
         };
         EventDetail: components["schemas"]["EventSummary"] & {
@@ -1019,14 +1071,40 @@ export interface components {
             description: string;
             cover_image: string;
             /** @enum {string} */
-            status: "DRAFT" | "PUBLISHED";
+            status: "DRAFT" | "PUBLISHED" | "PAUSED" | "ENDED" | "CANCELLED";
             /** Format: int64 */
             base_price: number;
             subcategory?: string;
+            gallery?: string[];
             highlights?: string[];
+            schedule?: {
+                time?: string;
+                title?: string;
+                description?: string;
+            }[];
             terms?: string[];
             age_note?: string;
             accessibility_note?: string;
+            ticket_types?: {
+                id: string;
+                name: string;
+                description?: string;
+                /** Format: int64 */
+                price: number;
+                quota: number;
+                min_per_order?: number;
+                max_per_order?: number;
+                /** Format: date-time */
+                sales_start_at?: string;
+                /** Format: date-time */
+                sales_end_at?: string;
+                benefits?: string[];
+                /** @enum {string} */
+                status?: "ACTIVE" | "INACTIVE" | "SOLD_OUT";
+                /** @enum {string} */
+                kind?: "GENERAL_ADMISSION" | "SEATED";
+                tier_key?: string;
+            }[];
         };
         OrganizerEventUpdate: components["schemas"]["OrganizerEventCreate"] & {
             /** @enum {string} */
@@ -1323,6 +1401,26 @@ export interface operations {
             };
         };
     };
+    listOrganizers: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Organizers */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Organizer"][];
+                };
+            };
+        };
+    };
     listEvents: {
         parameters: {
             query?: {
@@ -1401,6 +1499,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["TicketTypeList"];
+                };
+            };
+        };
+    };
+    listVenues: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Venues */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Venue"][];
                 };
             };
         };
@@ -1888,7 +2006,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["OrganizerEventSummary"][];
+                    "application/json": components["schemas"]["EventDetail"][];
                 };
             };
         };
@@ -1912,7 +2030,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["OrganizerEventSummary"];
+                    "application/json": components["schemas"]["EventDetail"];
                 };
             };
         };
@@ -1934,8 +2052,42 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["OrganizerEventSummary"];
+                    "application/json": components["schemas"]["EventDetail"];
                 };
+            };
+            /** @description Event not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    deleteOrganizerEvent: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                eventId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Event deleted */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Event has orders; cancel it instead */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
@@ -1960,7 +2112,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["OrganizerEventSummary"];
+                    "application/json": components["schemas"]["EventDetail"];
                 };
             };
         };

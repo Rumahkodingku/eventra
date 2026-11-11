@@ -24,13 +24,13 @@ export default function RegisterPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
 
-  const submit = (event: React.FormEvent) => {
+  const submit = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!name.trim() || !email.trim() || password.length < 8) {
       setError(t("auth.required"));
       return;
     }
-    const result = register({ name, email, phone });
+    const result = await register({ name, email, phone });
     if (!result.ok) {
       setError(
         result.error === "exists"

@@ -1,12 +1,14 @@
 package catalog
 
 import (
+	"errors"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 
 	"github.com/eventra/eventra/apps/api/internal/modules/identity"
 	"github.com/eventra/eventra/apps/api/internal/platform/storage"
@@ -23,6 +25,8 @@ func NewHandler(service *Service, imageStore *storage.ImageStore) *Handler {
 
 func (h *Handler) RegisterRoutes(router *gin.RouterGroup, auth *identity.Handler) {
 	router.GET("/categories", h.listCategories)
+	router.GET("/organizers", h.listOrganizers)
+	router.GET("/venues", h.listVenues)
 	router.GET("/venues/:venueId", h.getVenue)
 	router.GET("/events", h.listEvents)
 	router.GET("/events/:event", h.getEvent)
@@ -38,6 +42,7 @@ func (h *Handler) RegisterRoutes(router *gin.RouterGroup, auth *identity.Handler
 	organizer.POST("/events/:eventId/publish", h.publishEvent)
 	organizer.POST("/events/:eventId/pause", h.pauseEvent)
 	organizer.POST("/events/:eventId/cancel", h.cancelEvent)
+	organizer.DELETE("/events/:eventId", h.deleteOrganizerEvent)
 	organizer.GET("/events/:eventId/ticket-types", h.listTicketTypes)
 	organizer.POST("/uploads", h.createUpload)
 	organizer.DELETE("/uploads", h.deleteUpload)
@@ -50,6 +55,24 @@ func (h *Handler) listCategories(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, categories)
+}
+
+func (h *Handler) listOrganizers(c *gin.Context) {
+	organizers, err := h.service.ListOrganizers(c.Request.Context())
+	if err != nil {
+		writeError(c, http.StatusInternalServerError, "INTERNAL", "Could not load organizers.")
+		return
+	}
+	c.JSON(http.StatusOK, organizers)
+}
+
+func (h *Handler) listVenues(c *gin.Context) {
+	venues, err := h.service.ListVenues(c.Request.Context())
+	if err != nil {
+		writeError(c, http.StatusInternalServerError, "INTERNAL", "Could not load venues.")
+		return
+	}
+	c.JSON(http.StatusOK, venues)
 }
 
 func (h *Handler) getVenue(c *gin.Context) {
@@ -211,6 +234,25 @@ func (h *Handler) pauseEvent(c *gin.Context) {
 
 func (h *Handler) cancelEvent(c *gin.Context) {
 	h.transition(c, "CANCELLED")
+}
+
+func (h *Handler) deleteOrganizerEvent(c *gin.Context) {
+	organizationID, err := h.organizationID(c)
+	if err != nil {
+		writeError(c, http.StatusForbidden, "AUTH_FORBIDDEN", "Organizer access denied.")
+		return
+	}
+	err = h.service.DeleteEvent(c.Request.Context(), organizationID, c.Param("eventId"))
+	switch {
+	case err == nil:
+		c.Status(http.StatusNoContent)
+	case errors.Is(err, ErrEventHasOrders):
+		writeError(c, http.StatusConflict, "EVENT_HAS_ORDERS", "Event has orders; cancel it instead.")
+	case errors.Is(err, gorm.ErrRecordNotFound):
+		writeError(c, http.StatusNotFound, "NOT_FOUND", "Event not found.")
+	default:
+		writeError(c, http.StatusConflict, "CONFLICT", "Event cannot be deleted.")
+	}
 }
 
 func (h *Handler) transition(c *gin.Context, status string) {

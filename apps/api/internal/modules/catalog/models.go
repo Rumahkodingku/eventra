@@ -18,6 +18,14 @@ type Category struct {
 
 func (Category) TableName() string { return "categories" }
 
+type Organizer struct {
+	ID          string `json:"id" gorm:"column:id"`
+	DisplayName string `json:"display_name" gorm:"column:display_name"`
+	Description string `json:"description" gorm:"column:description"`
+	Logo        string `json:"logo" gorm:"column:logo"`
+	Email       string `json:"email" gorm:"column:email"`
+}
+
 type Venue struct {
 	ID       string  `json:"id" gorm:"column:id;primaryKey"`
 	Name     string  `json:"name" gorm:"column:name"`

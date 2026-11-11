@@ -40,6 +40,8 @@ export default function OrganizerEventsPage() {
   const hydrated = useHydrated();
   const locale = usePreferencesStore((state) => state.locale);
   const events = useEventStore((state) => state.events);
+  const isLoading = useEventStore((state) => state.isLoading);
+  const error = useEventStore((state) => state.error);
   const deleteEvent = useEventStore((state) => state.deleteEvent);
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("ALL");
@@ -59,12 +61,27 @@ export default function OrganizerEventsPage() {
 
   const visible = filtered.slice(0, visibleCount);
 
-  if (!hydrated) {
+  if (!hydrated || isLoading) {
     return (
       <div className="space-y-5">
         <Skeleton className="h-20" />
         <Skeleton className="h-96" />
       </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <EmptyState
+        icon={CalendarDays}
+        title={t("errors.generic")}
+        body={error}
+        action={
+          <Button onClick={() => window.location.reload()}>
+            {t("common.retry")}
+          </Button>
+        }
+      />
     );
   }
 
@@ -277,11 +294,15 @@ export default function OrganizerEventsPage() {
             </Button>
             <Button
               variant="destructive"
-              onClick={() => {
+              onClick={async () => {
                 if (!deleteId) return;
-                deleteEvent(deleteId);
+                try {
+                  await deleteEvent(deleteId);
+                  toast.success(t("organizer.deleteSuccess"));
+                } catch {
+                  toast.error(t("errors.generic"));
+                }
                 setDeleteId(null);
-                toast.success(t("organizer.deleteSuccess"));
               }}
             >
               <Trash2 className="size-4" /> {t("common.delete")}

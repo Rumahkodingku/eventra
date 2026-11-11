@@ -41,10 +41,11 @@ const imageOptions = [
 
 export function OrganizerEventForm({ eventId }: { eventId?: string }) {
   const t = useTranslations();
-  const { categories, venues } = useCatalog();
+  const { categories, venues, isLoading: catalogLoading } = useCatalog();
   const router = useRouter();
   const hydrated = useHydrated();
   const events = useEventStore((state) => state.events);
+  const eventsLoading = useEventStore((state) => state.isLoading);
   const createEvent = useEventStore((state) => state.createEvent);
   const updateEvent = useEventStore((state) => state.updateEvent);
   const existing = eventId
@@ -56,9 +57,11 @@ export function OrganizerEventForm({ eventId }: { eventId?: string }) {
 
   const [title, setTitle] = useState(existing?.title ?? "");
   const [categoryId, setCategoryId] = useState(
-    existing?.categoryId ?? categories[0].id,
+    existing?.categoryId ?? categories[0]?.id ?? "",
   );
-  const [venueId, setVenueId] = useState(existing?.venueId ?? venues[0].id);
+  const [venueId, setVenueId] = useState(
+    existing?.venueId ?? venues[0]?.id ?? "",
+  );
   const [startAt, setStartAt] = useState(
     existing
       ? toDateTimeLocal(existing.startAt)
@@ -122,7 +125,12 @@ export function OrganizerEventForm({ eventId }: { eventId?: string }) {
     setCoverImage(existing.coverImage);
   }, [existing]);
 
-  if (!hydrated) {
+  useEffect(() => {
+    if (!categoryId && categories[0]) setCategoryId(categories[0].id);
+    if (!venueId && venues[0]) setVenueId(venues[0].id);
+  }, [categories, venues, categoryId, venueId]);
+
+  if (!hydrated || catalogLoading || (eventId && eventsLoading)) {
     return (
       <div className="space-y-5">
         <Skeleton className="h-20" />
@@ -146,10 +154,11 @@ export function OrganizerEventForm({ eventId }: { eventId?: string }) {
     );
   }
 
-  const save = (nextStatus: Event["status"]) => {
+  const save = async (nextStatus: Event["status"]) => {
     const nextErrors: Record<string, string> = {};
     if (!title.trim()) nextErrors.title = t("errors.required");
     if (!description.trim()) nextErrors.description = t("errors.required");
+    if (!categoryId || !venueId) nextErrors.categoryId = t("errors.required");
     if (!existing && (!Number(basePrice) || Number(basePrice) < 1000))
       nextErrors.basePrice = t("errors.required");
     if (new Date(endAt).getTime() <= new Date(startAt).getTime())
@@ -158,7 +167,7 @@ export function OrganizerEventForm({ eventId }: { eventId?: string }) {
     if (Object.keys(nextErrors).length) return;
 
     if (existing) {
-      updateEvent({
+      await updateEvent({
         ...existing,
         title: title.trim(),
         categoryId,
@@ -188,7 +197,7 @@ export function OrganizerEventForm({ eventId }: { eventId?: string }) {
       return;
     }
 
-    const created = createEvent({
+    const created = await createEvent({
       title: title.trim(),
       categoryId,
       venueId,
@@ -240,7 +249,7 @@ export function OrganizerEventForm({ eventId }: { eventId?: string }) {
         className="grid gap-6 xl:grid-cols-[1fr_360px]"
         onSubmit={(event) => {
           event.preventDefault();
-          save(status);
+          void save(status);
         }}
       >
         <div className="space-y-5">
@@ -720,7 +729,7 @@ export function OrganizerEventForm({ eventId }: { eventId?: string }) {
                 type="button"
                 variant="secondary"
                 className="w-full"
-                onClick={() => save("PUBLISHED")}
+                onClick={() => void save("PUBLISHED")}
               >
                 <Send className="size-4" /> {t("organizer.publish")}
               </Button>

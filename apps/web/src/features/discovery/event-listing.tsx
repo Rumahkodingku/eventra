@@ -11,6 +11,7 @@ import { Dialog, SheetContent } from "@/components/ui/dialog";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Field } from "@/components/ui/field";
 import { Input, Select } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import type { Event } from "@/domain/types";
 import { cn } from "@/lib/cn";
 import { getStartingPrice, isEventPurchasable } from "@/lib/pricing";
@@ -18,6 +19,7 @@ import { useCatalog } from "@/services/hooks/use-catalog";
 import { useEventStore } from "@/services/hooks/use-event-store";
 
 const PAGE_SIZE = 9;
+const SKELETON_ROWS = [1, 2, 3, 4, 5, 6];
 
 type SortKey =
   | "recommended"
@@ -52,6 +54,8 @@ export function EventListing() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const events = useEventStore((state) => state.events);
+  const isLoading = useEventStore((state) => state.isLoading);
+  const error = useEventStore((state) => state.error);
   const [filterOpen, setFilterOpen] = useState(false);
   const [query, setQuery] = useState(searchParams.get("q") ?? "");
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
@@ -447,7 +451,24 @@ export function EventListing() {
         </aside>
 
         <div>
-          {visible.length ? (
+          {isLoading ? (
+            <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+              {SKELETON_ROWS.map((row) => (
+                <Skeleton key={row} className="h-80 rounded-2xl" />
+              ))}
+            </div>
+          ) : error ? (
+            <EmptyState
+              icon={Filter}
+              title={t("errors.generic")}
+              body={error}
+              action={
+                <Button onClick={() => router.refresh()}>
+                  {t("common.retry")}
+                </Button>
+              }
+            />
+          ) : visible.length ? (
             <>
               <div
                 className={

@@ -16,6 +16,7 @@
     "test": "turbo run test --filter=@eventra/web",
     "test:run": "turbo run test:run --filter=@eventra/web",
     "test:e2e": "turbo run test:e2e --filter=@eventra/web",
+    "test:e2e:api": "bash scripts/e2e-api.sh",
     "test:e2e:firefox": "turbo run test:e2e:firefox --filter=@eventra/web",
     "format": "turbo run format --filter=@eventra/web",
     "format:check": "turbo run format:check --filter=@eventra/web",

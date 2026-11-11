@@ -1,6 +1,5 @@
 extends:
   - recommended
-  - diff-recommended
 
 rules:
   operation-4xx-response: off

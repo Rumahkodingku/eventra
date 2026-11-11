@@ -1414,72 +1414,72 @@ Phase 4.
 
 #### Task 5.1 — Identity schema
 
-- [ ] Create `users`, `user_credentials`, `sessions`, `refresh_tokens`.
-- [ ] Create `roles`, `permissions`, `role_permissions`, `user_roles`.
-- [ ] Create `organizations`, `organization_members`.
-- [ ] Create `guest_principals`.
-- [ ] Add indexes and unique constraints.
+- [x] Create `users`, `user_credentials`, `sessions`, `refresh_tokens`.
+- [x] Create `roles`, `permissions`, `role_permissions`, `user_roles`.
+- [x] Create `organizations`, `organization_members`.
+- [x] Create `guest_principals`.
+- [x] Add indexes and unique constraints.
 
 **Verification:** migration up/down; constraint tests.
 
 #### Task 5.2 — Auth use cases
 
-- [ ] Register with email normalization and Argon2id.
-- [ ] Login with safe error messages.
-- [ ] Refresh with rotation and reuse detection.
-- [ ] Logout current session.
-- [ ] Logout all sessions.
-- [ ] `GET /auth/me`.
+- [x] Register with email normalization and Argon2id.
+- [x] Login with safe error messages.
+- [x] Refresh with rotation and reuse detection.
+- [x] Logout current session.
+- [x] Logout all sessions.
+- [x] `GET /auth/me`.
 
 **Verification:** unit + handler tests.
 
 #### Task 5.3 — Cookies and CSRF
 
-- [ ] Set access/refresh cookies with correct flags.
-- [ ] Set CSRF cookie/token.
-- [ ] Validate Origin on mutations.
-- [ ] Validate CSRF token on cookie-authenticated mutations.
-- [ ] Add rate limits for login/register/refresh.
+- [x] Set access/refresh cookies with correct flags.
+- [x] Set CSRF cookie/token.
+- [x] Validate Origin on mutations.
+- [x] Validate CSRF token on cookie-authenticated mutations.
+- [x] Add rate limits for login/register/refresh.
 
 **Verification:** cookie/CSRF integration tests; browser E2E login.
 
 #### Task 5.4 — RBAC and tenant isolation
 
-- [ ] Implement permission checks.
-- [ ] Implement organization membership checks.
-- [ ] Implement resource ownership checks.
-- [ ] Add authz test matrix for customer/organizer/other organizer/guest.
-- [ ] Ensure guessing IDs does not expose other organization data.
+- [x] Implement permission checks.
+- [x] Implement organization membership checks.
+- [x] Implement resource ownership checks.
+- [x] Add authz test matrix for customer/organizer/other organizer/guest.
+- [x] Ensure guessing IDs does not expose other organization data.
 
 **Verification:** 401/403 matrix passes.
 
 #### Task 5.5 — Guest principal
 
-- [ ] Generate high-entropy secret.
-- [ ] Store only hash.
-- [ ] Set HttpOnly guest cookie.
-- [ ] Add 30-day retention and cleanup job.
-- [ ] Scope guest order access by principal.
+- [x] Generate high-entropy secret.
+- [x] Store only hash.
+- [x] Set HttpOnly guest cookie.
+- [x] Add 30-day retention and cleanup job.
+- [x] Scope guest order access by principal.
 
 **Verification:** guest isolation tests; guest cannot access another guest's order.
 
 #### Task 5.6 — Seed users and organization
 
-- [ ] Create one organization for `Rumah Kodingku Live`.
-- [ ] Assign organizer user as `organizer_owner`.
-- [ ] Create customer user.
-- [ ] Seed password `demo12345` hashed with Argon2id.
-- [ ] Mark other organizer profiles display-only.
+- [x] Create one organization for `Rumah Kodingku Live`.
+- [x] Assign organizer user as `organizer_owner`.
+- [x] Create customer user.
+- [x] Seed password `demo12345` hashed with Argon2id.
+- [x] Mark other organizer profiles display-only.
 
 **Verification:** login as both demo accounts; organizer sees only its organization.
 
 #### Task 5.7 — Frontend auth adapter
 
-- [ ] Implement `UserRepository`.
-- [ ] Add `/auth/me` bootstrap.
-- [ ] Add one-refresh-attempt behavior.
-- [ ] Clear session view on refresh failure.
-- [ ] Keep Zustand for non-sensitive user view model only.
+- [x] Implement `UserRepository`.
+- [x] Add `/auth/me` bootstrap.
+- [x] Add one-refresh-attempt behavior.
+- [x] Clear session view on refresh failure.
+- [x] Keep Zustand for non-sensitive user view model only.
 
 **Verification:** login/logout/refresh E2E; no JWT in localStorage.
 

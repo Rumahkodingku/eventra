@@ -128,6 +128,7 @@ export interface RegisterInput {
   name: string;
   email: string;
   phone?: string;
+  password?: string;
 }
 
 export interface UserRepository {
@@ -144,6 +145,7 @@ export interface UserRepository {
     user?: User;
   }>;
   logout(): Promise<void>;
+  logoutAll(): Promise<void>;
   updateProfile(
     input: Partial<Pick<User, "name" | "email" | "phone">>,
   ): Promise<void>;

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"path/filepath"
+	"strings"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/golang-migrate/migrate/v4"
@@ -25,7 +26,7 @@ func run(dsn, dir, direction string) error {
 	if err != nil {
 		return fmt.Errorf("resolve migrations dir: %w", err)
 	}
-	db, err := sql.Open("mysql", dsn)
+	db, err := sql.Open("mysql", withMultiStatements(dsn))
 	if err != nil {
 		return fmt.Errorf("open mysql for migration: %w", err)
 	}
@@ -52,4 +53,15 @@ func run(dsn, dir, direction string) error {
 		return nil
 	}
 	return err
+}
+
+func withMultiStatements(dsn string) string {
+	if strings.Contains(dsn, "multiStatements=") {
+		return dsn
+	}
+	separator := "?"
+	if strings.Contains(dsn, "?") {
+		separator = "&"
+	}
+	return dsn + separator + "multiStatements=true"
 }

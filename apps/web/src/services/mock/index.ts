@@ -122,6 +122,7 @@ export const userRepository: UserRepository = {
   loginDemo: async (role) => useSessionStore.getState().loginDemo(role),
   register: async (input) => useSessionStore.getState().register(input),
   logout: async () => useSessionStore.getState().logout(),
+  logoutAll: async () => useSessionStore.getState().logout(),
   updateProfile: async (input) =>
     useSessionStore.getState().updateProfile(input),
 };

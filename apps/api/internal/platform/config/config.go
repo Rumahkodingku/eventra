@@ -3,34 +3,47 @@ package config
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 )
 
 const (
-	defaultHTTPAddr    = ":8080"
-	defaultWebOrigin   = "http://localhost:3000"
-	defaultDatabaseURL = "eventra:eventra@tcp(localhost:3306)/eventra?parseTime=true&charset=utf8mb4&loc=UTC"
-	defaultRedisURL    = "redis://localhost:6379/0"
-	defaultLogLevel    = "info"
+	defaultHTTPAddr     = ":8080"
+	defaultWebOrigin    = "http://localhost:3000"
+	defaultDatabaseURL  = "eventra:eventra@tcp(localhost:3306)/eventra?parseTime=true&charset=utf8mb4&loc=UTC"
+	defaultRedisURL     = "redis://localhost:6379/0"
+	defaultLogLevel     = "info"
+	defaultJWTSecret    = "dev-only-change-me"
+	defaultAccessTTL    = 15
+	defaultRefreshTTL   = 720
+	defaultCookieSecure = false
 )
 
 type Config struct {
-	AppEnv      string
-	HTTPAddr    string
-	WebOrigin   string
-	DatabaseURL string
-	RedisURL    string
-	LogLevel    string
+	AppEnv          string
+	HTTPAddr        string
+	WebOrigin       string
+	DatabaseURL     string
+	RedisURL        string
+	LogLevel        string
+	JWTSecret       string
+	AccessTTLMin    int
+	RefreshTTLHours int
+	CookieSecure    bool
 }
 
 func Load() (Config, error) {
 	cfg := Config{
-		AppEnv:      getenv("APP_ENV", "development"),
-		HTTPAddr:    getenv("HTTP_ADDR", defaultHTTPAddr),
-		WebOrigin:   getenv("WEB_ORIGIN", defaultWebOrigin),
-		DatabaseURL: getenv("DATABASE_URL", defaultDatabaseURL),
-		RedisURL:    getenv("REDIS_URL", defaultRedisURL),
-		LogLevel:    getenv("LOG_LEVEL", defaultLogLevel),
+		AppEnv:          getenv("APP_ENV", "development"),
+		HTTPAddr:        getenv("HTTP_ADDR", defaultHTTPAddr),
+		WebOrigin:       getenv("WEB_ORIGIN", defaultWebOrigin),
+		DatabaseURL:     getenv("DATABASE_URL", defaultDatabaseURL),
+		RedisURL:        getenv("REDIS_URL", defaultRedisURL),
+		LogLevel:        getenv("LOG_LEVEL", defaultLogLevel),
+		JWTSecret:       getenv("JWT_SECRET", defaultJWTSecret),
+		AccessTTLMin:    getenvInt("JWT_ACCESS_TTL_MINUTES", defaultAccessTTL),
+		RefreshTTLHours: getenvInt("JWT_REFRESH_TTL_HOURS", defaultRefreshTTL),
+		CookieSecure:    getenvBool("COOKIE_SECURE", defaultCookieSecure),
 	}
 
 	if err := cfg.Validate(); err != nil {
@@ -60,12 +73,27 @@ func (c Config) Validate() error {
 	default:
 		return fmt.Errorf("LOG_LEVEL must be debug, info, warn, or error")
 	}
+	if c.JWTSecret == "" {
+		return fmt.Errorf("JWT_SECRET is required")
+	}
+	if c.AccessTTLMin <= 0 {
+		return fmt.Errorf("JWT_ACCESS_TTL_MINUTES must be greater than zero")
+	}
+	if c.RefreshTTLHours <= 0 {
+		return fmt.Errorf("JWT_REFRESH_TTL_HOURS must be greater than zero")
+	}
 	if c.AppEnv == "production" {
 		if c.DatabaseURL == defaultDatabaseURL {
 			return fmt.Errorf("DATABASE_URL must be set in production")
 		}
 		if c.RedisURL == defaultRedisURL {
 			return fmt.Errorf("REDIS_URL must be set in production")
+		}
+		if c.JWTSecret == defaultJWTSecret {
+			return fmt.Errorf("JWT_SECRET must be set in production")
+		}
+		if !c.CookieSecure {
+			return fmt.Errorf("COOKIE_SECURE must be true in production")
 		}
 	}
 	return nil
@@ -76,4 +104,28 @@ func getenv(key, fallback string) string {
 		return value
 	}
 	return fallback
+}
+
+func getenvInt(key string, fallback int) int {
+	value := os.Getenv(key)
+	if value == "" {
+		return fallback
+	}
+	parsed, err := strconv.Atoi(value)
+	if err != nil {
+		return fallback
+	}
+	return parsed
+}
+
+func getenvBool(key string, fallback bool) bool {
+	value := os.Getenv(key)
+	if value == "" {
+		return fallback
+	}
+	parsed, err := strconv.ParseBool(value)
+	if err != nil {
+		return fallback
+	}
+	return parsed
 }

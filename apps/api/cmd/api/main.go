@@ -9,6 +9,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/eventra/eventra/apps/api/internal/modules/identity"
 	"github.com/eventra/eventra/apps/api/internal/platform/cache"
 	"github.com/eventra/eventra/apps/api/internal/platform/config"
 	"github.com/eventra/eventra/apps/api/internal/platform/database"
@@ -52,10 +53,17 @@ func main() {
 		}
 	}()
 
+	authService := identity.NewService(db, identity.Config{
+		JWTSecret:  cfg.JWTSecret,
+		AccessTTL:  time.Duration(cfg.AccessTTLMin) * time.Minute,
+		RefreshTTL: time.Duration(cfg.RefreshTTLHours) * time.Hour,
+	})
+	authHandler := identity.NewHandler(authService, cfg.CookieSecure)
+
 	server := httpserver.NewServer(
 		httpserver.ServerConfig{HTTPAddr: cfg.HTTPAddr, WebOrigin: cfg.WebOrigin},
 		log,
-		httpserver.Dependencies{DB: db, Redis: redisClient},
+		httpserver.Dependencies{DB: db, Redis: redisClient, Auth: authHandler},
 	)
 
 	if err := server.Run(ctx); err != nil && !errors.Is(err, context.Canceled) {

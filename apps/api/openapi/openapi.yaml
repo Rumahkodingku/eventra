@@ -361,6 +361,9 @@ components:
         locale:
           type: string
           enum: [id, en]
+        created_at:
+          type: string
+          format: date-time
     LoginRequest:
       type: object
       required: [email, password]
@@ -984,6 +987,22 @@ paths:
                 $ref: "#/components/schemas/AuthResponse"
         "401":
           description: Invalid refresh session
+  /auth/guest:
+    post:
+      summary: Create or resume guest principal
+      tags: [Auth]
+      operationId: createGuest
+      responses:
+        "200":
+          description: Guest principal is ready
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [guest]
+                properties:
+                  guest:
+                    type: boolean
   /auth/logout:
     post:
       summary: Logout

@@ -89,6 +89,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/auth/guest": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create or resume guest principal */
+        post: operations["createGuest"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/auth/logout": {
         parameters: {
             query?: never;
@@ -744,6 +761,8 @@ export interface components {
             role: "CUSTOMER" | "ORGANIZER";
             /** @enum {string} */
             locale: "id" | "en";
+            /** Format: date-time */
+            created_at?: string;
         };
         LoginRequest: {
             /** Format: email */
@@ -1166,6 +1185,28 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    createGuest: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Guest principal is ready */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        guest: boolean;
+                    };
+                };
             };
         };
     };

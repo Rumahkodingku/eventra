@@ -16,6 +16,7 @@
     "test:e2e:firefox": "playwright test e2e/logo.spec.ts e2e/smoke.spec.ts --project=firefox"
   },
   "dependencies": {
+    "@eventra/api-client": "*",
     "@hookform/resolvers": "^7.0.5",
     "@radix-ui/react-checkbox": "^1.4.1",
     "@radix-ui/react-dialog": "^1.3.1",

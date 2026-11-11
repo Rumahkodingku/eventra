@@ -6,6 +6,7 @@ import { join } from "node:path";
 const current = "apps/api/openapi/openapi.yaml";
 const baseRef = process.env.OPENAPI_BASE_REF ?? "origin/main";
 const baseFile = process.env.OPENAPI_BASE_FILE;
+const oasdiff = process.env.OASDIFF_BIN ?? "oasdiff";
 const tempDir = mkdtempSync(join(tmpdir(), "eventra-openapi-"));
 
 try {
@@ -40,17 +41,8 @@ try {
 
   try {
     execFileSync(
-      "npx",
-      [
-        "redocly",
-        "diff",
-        basePath,
-        current,
-        "--fail-on",
-        "major",
-        "--format",
-        "markdown",
-      ],
+      oasdiff,
+      ["breaking", basePath, current, "--fail-on", "ERR", "--format", "text"],
       { stdio: "inherit" },
     );
   } catch (error) {

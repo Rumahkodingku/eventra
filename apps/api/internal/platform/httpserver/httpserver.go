@@ -12,11 +12,14 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
+
+	"github.com/eventra/eventra/apps/api/internal/modules/identity"
 )
 
 type Dependencies struct {
 	DB    *gorm.DB
 	Redis *redis.Client
+	Auth  *identity.Handler
 }
 
 func NewRouter(cfg Config, log *slog.Logger, deps Dependencies) *gin.Engine {
@@ -29,6 +32,10 @@ func NewRouter(cfg Config, log *slog.Logger, deps Dependencies) *gin.Engine {
 	router.Use(CORS(cfg.WebOrigin))
 
 	v1 := router.Group("/api/v1")
+	if deps.Auth != nil {
+		v1.Use(deps.Auth.CSRF())
+		deps.Auth.RegisterRoutes(v1)
+	}
 	v1.GET("/health/live", live)
 	v1.GET("/health/ready", ready(deps))
 	return router

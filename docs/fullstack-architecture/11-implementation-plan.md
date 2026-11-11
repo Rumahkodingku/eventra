@@ -1189,55 +1189,55 @@ Phase 1. May run in parallel with Phase 2.
 
 #### Task 3.1 — Go module and config
 
-- [ ] Pin Go `1.27.3`.
-- [ ] Add config loader with required/optional validation.
-- [ ] Add `.env.example` with names only, no secrets.
-- [ ] Add structured logger with request ID.
+- [x] Pin Go `1.27.3`.
+- [x] Add config loader with required/optional validation.
+- [x] Add `.env.example` with names only, no secrets.
+- [x] Add structured logger with request ID.
 
 **Verification:** `go test ./...` for config tests; invalid config exits non-zero.
 
 #### Task 3.2 — HTTP server and middleware
 
-- [ ] Add Gin router.
-- [ ] Add request ID, recovery, logging, timeout, body limit, CORS allowlist.
-- [ ] Add `/api/v1/health/live` and `/api/v1/health/ready`.
-- [ ] Add graceful shutdown.
+- [x] Add Gin router.
+- [x] Add request ID, recovery, logging, timeout, body limit, CORS allowlist.
+- [x] Add `/api/v1/health/live` and `/api/v1/health/ready`.
+- [x] Add graceful shutdown.
 
 **Verification:** handler tests with `httptest`; health endpoints return expected JSON.
 
 #### Task 3.3 — Database and cache
 
-- [ ] Add MySQL pool with context timeouts.
-- [ ] Add Redis client with TTL policy.
-- [ ] Add readiness checks for both.
-- [ ] Add integration test harness using real containers.
+- [x] Add MySQL pool with context timeouts.
+- [x] Add Redis client with TTL policy.
+- [x] Add readiness checks for both.
+- [x] Add integration test harness using real containers.
 
 **Verification:** `go test -tags=integration ./...` against MySQL/Redis.
 
 #### Task 3.4 — Migrations
 
-- [ ] Add `golang-migrate` runner.
-- [ ] Add initial migration and down migration.
-- [ ] Add migration up/down integration test.
-- [ ] Run migrations as a controlled one-off job, not from every replica.
+- [x] Add `golang-migrate` runner.
+- [x] Add initial migration and down migration.
+- [x] Add migration up/down integration test.
+- [x] Run migrations as a controlled one-off job, not from every replica.
 
 **Verification:** empty DB → up → down → up passes.
 
 #### Task 3.5 — Docker Compose
 
-- [ ] Add MySQL, Redis, API, and optional MinIO services.
-- [ ] Add health checks and named volumes.
-- [ ] Expose only required ports.
-- [ ] Add `.dockerignore`.
+- [x] Add MySQL, Redis, API, and optional MinIO services.
+- [x] Add health checks and named volumes.
+- [x] Expose only required ports.
+- [x] Add `.dockerignore`.
 
 **Verification:** `docker compose up -d`; API health passes; MySQL/Redis not publicly exposed.
 
 #### Task 3.6 — CI baseline
 
-- [ ] Add API CI workflow.
-- [ ] Run `go test`, `go vet`, integration tests, migration test.
-- [ ] Add dependency scan skeleton.
-- [ ] Do not deploy yet.
+- [x] Add API CI workflow.
+- [x] Run `go test`, `go vet`, integration tests, migration test.
+- [x] Add dependency scan skeleton.
+- [x] Do not deploy yet.
 
 **Verification:** CI passes on a pull request.
 

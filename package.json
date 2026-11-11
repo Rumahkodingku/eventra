@@ -18,9 +18,17 @@
     "test:e2e": "turbo run test:e2e --filter=@eventra/web",
     "test:e2e:firefox": "turbo run test:e2e:firefox --filter=@eventra/web",
     "format": "turbo run format --filter=@eventra/web",
-    "format:check": "turbo run format:check --filter=@eventra/web"
+    "format:check": "turbo run format:check --filter=@eventra/web",
+    "openapi:lint": "redocly lint apps/api/openapi/openapi.yaml",
+    "api-client:generate": "openapi-typescript apps/api/openapi/openapi.yaml -o packages/api-client/src/generated/schema.ts",
+    "api-client:typecheck": "npm --workspace @eventra/api-client run typecheck",
+    "openapi:contract": "node scripts/openapi-contract-test.mjs",
+    "openapi:breaking": "node scripts/openapi-breaking.mjs"
   },
   "devDependencies": {
-    "turbo": "2.11.10"
+    "@redocly/cli": "^2.77.0",
+    "openapi-typescript": "^7.13.0",
+    "turbo": "2.11.10",
+    "yaml": "^2.8.1"
   }
 }

@@ -1306,44 +1306,44 @@ Phase 3.
 
 #### Task 4.1 — Contract skeleton
 
-- [ ] Add OpenAPI 3.1 metadata, servers, security schemes, error envelope.
-- [ ] Add common schemas: money, timestamps, pagination, cursor, request ID.
-- [ ] Add auth, catalog, cart, checkout, order, payment, ticket, organizer, account paths.
+- [x] Add OpenAPI 3.1 metadata, servers, security schemes, error envelope.
+- [x] Add common schemas: money, timestamps, pagination, cursor, request ID.
+- [x] Add auth, catalog, cart, checkout, order, payment, ticket, organizer, account paths.
 
 **Verification:** OpenAPI lint passes.
 
 #### Task 4.2 — Domain schemas
 
-- [ ] Define request/response schemas for each domain.
-- [ ] Define status enums matching domain rules.
-- [ ] Define idempotency header and conflict response.
-- [ ] Define cookie auth and CSRF header.
-- [ ] Define nullable/optional fields explicitly.
+- [x] Define request/response schemas for each domain.
+- [x] Define status enums matching domain rules.
+- [x] Define idempotency header and conflict response.
+- [x] Define cookie auth and CSRF header.
+- [x] Define nullable/optional fields explicitly.
 
 **Verification:** schema validation and example validation pass.
 
 #### Task 4.3 — Generate client
 
-- [ ] Add `openapi-typescript` generation.
-- [ ] Add `openapi-fetch` runtime wrapper with base URL, credentials, request ID, typed errors, abort support.
-- [ ] Add `api-client` build/typecheck.
-- [ ] Do not hand-edit generated files.
+- [x] Add `openapi-typescript` generation.
+- [x] Add `openapi-fetch` runtime wrapper with base URL, credentials, request ID, typed errors, abort support.
+- [x] Add `api-client` build/typecheck.
+- [x] Do not hand-edit generated files.
 
 **Verification:** `npm run api-client:generate && npm run api-client:typecheck`.
 
 #### Task 4.4 — Breaking-change check
 
-- [ ] Add `oasdiff` or equivalent in CI.
-- [ ] Compare against the target branch.
-- [ ] Fail on breaking changes without an approved migration note.
+- [x] Add `oasdiff` or equivalent in CI.
+- [x] Compare against the target branch.
+- [x] Fail on breaking changes without an approved migration note.
 
 **Verification:** a deliberate breaking change fails CI; additive change passes.
 
 #### Task 4.5 — Contract tests
 
-- [ ] Add tests that validate representative request/response examples.
-- [ ] Ensure generated client accepts the documented error envelope.
-- [ ] Add a test that missing required fields fail validation.
+- [x] Add tests that validate representative request/response examples.
+- [x] Ensure generated client accepts the documented error envelope.
+- [x] Add a test that missing required fields fail validation.
 
 **Verification:** contract test suite passes.
 

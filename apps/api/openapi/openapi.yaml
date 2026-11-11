@@ -589,8 +589,12 @@ components:
           type: string
     CreateOrderRequest:
       type: object
-      required: [buyer, payment_method, items, attendees, simulate_failure]
+      required: [reservation_id, buyer, payment_method, attendees, simulate_failure]
       properties:
+        reservation_id:
+          type: string
+        promo_code:
+          type: string
         buyer:
           $ref: "#/components/schemas/Buyer"
         payment_method:
@@ -611,11 +615,9 @@ components:
                 items:
                   type: string
         attendees:
-          type: object
-          additionalProperties:
-            type: array
-            items:
-              $ref: "#/components/schemas/AttendeeInput"
+          type: array
+          items:
+            $ref: "#/components/schemas/AttendeeInput"
         simulate_failure:
           type: boolean
     OrderItem:
@@ -655,7 +657,7 @@ components:
             type: string
     Order:
       type: object
-      required: [id, order_number, owner_key, buyer, items, subtotal, service_fee, discount, total, currency, payment_status, order_status, created_at]
+      required: [id, order_number, owner_key, buyer_name, buyer_email, buyer_phone, items, subtotal, service_fee, discount, total, currency, payment_status, order_status, created_at]
       properties:
         id:
           type: string
@@ -663,8 +665,14 @@ components:
           type: string
         owner_key:
           type: string
-        buyer:
-          $ref: "#/components/schemas/Buyer"
+        user_id:
+          type: string
+        buyer_name:
+          type: string
+        buyer_email:
+          type: string
+        buyer_phone:
+          type: string
         items:
           type: array
           items:
@@ -787,6 +795,8 @@ components:
       properties:
         id:
           type: string
+        user_id:
+          type: string
         type:
           type: string
           enum: [ORDER, TICKET, EVENT, SYSTEM]
@@ -809,6 +819,8 @@ components:
         id:
           type: string
         event_id:
+          type: string
+        user_id:
           type: string
         author_name:
           type: string
@@ -941,6 +953,16 @@ components:
           type: boolean
         newsletter:
           type: boolean
+    AttendeeList:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/Attendee"
+        next_cursor:
+          type: string
     OrganizerEventSummary:
       type: object
       required: [id, title, slug, status, start_at, timezone, ticket_types]
@@ -1988,6 +2010,15 @@ paths:
                 type: array
                 items:
                   type: string
+    delete:
+      summary: ClearWishlist
+      tags: [Account]
+      operationId: clearWishlist
+      security:
+        - accessCookie: []
+      responses:
+        "204":
+          description: Cleared
     post:
       summary: AddWishlist
       tags: [Account]
@@ -2107,6 +2138,72 @@ paths:
       responses:
         "204":
           description: All marked read
+  /organizer/orders:
+    get:
+      summary: ListOrganizerOrders
+      tags: [Organizer]
+      operationId: listOrganizerOrders
+      security:
+        - accessCookie: []
+      responses:
+        "200":
+          description: Organizer orders
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrderList"
+  /organizer/attendees:
+    get:
+      summary: ListOrganizerAttendees
+      tags: [Organizer]
+      operationId: listOrganizerAttendees
+      security:
+        - accessCookie: []
+      responses:
+        "200":
+          description: Organizer attendees
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AttendeeList"
+  /organizer/tickets:
+    get:
+      summary: ListOrganizerTickets
+      tags: [Organizer]
+      operationId: listOrganizerTickets
+      security:
+        - accessCookie: []
+      responses:
+        "200":
+          description: Organizer tickets
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TicketList"
+  /events/{eventId}/seats:
+    get:
+      summary: ListClaimedSeats
+      tags: [Inventory]
+      operationId: listClaimedSeats
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Claimed and sold seat IDs
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [claimed]
+                properties:
+                  claimed:
+                    type: array
+                    items:
+                      type: string
   /organizer/analytics:
     get:
       summary: GetOrganizerAnalytics
@@ -2145,6 +2242,20 @@ paths:
             text/csv:
               schema:
                 type: string
+  /account/attendees:
+    get:
+      summary: ListMyAttendees
+      tags: [Account]
+      operationId: listMyAttendees
+      security:
+        - accessCookie: []
+      responses:
+        "200":
+          description: Attendees for the current principal
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AttendeeList"
   /organizer/settings:
     get:
       summary: GetOrganizerSettings

@@ -9,8 +9,8 @@ import (
 type Order struct {
 	ID            string      `json:"id" gorm:"column:id;primaryKey"`
 	OrderNumber   string      `json:"order_number" gorm:"column:order_number"`
-	PrincipalKey  string      `json:"-" gorm:"column:principal_key"`
-	UserID        *string     `json:"-" gorm:"column:user_id"`
+	PrincipalKey  string      `json:"owner_key" gorm:"column:principal_key"`
+	UserID        *string     `json:"user_id,omitempty" gorm:"column:user_id"`
 	ReservationID string      `json:"-" gorm:"column:reservation_id"`
 	BuyerName     string      `json:"buyer_name" gorm:"column:buyer_name"`
 	BuyerEmail    string      `json:"buyer_email" gorm:"column:buyer_email"`

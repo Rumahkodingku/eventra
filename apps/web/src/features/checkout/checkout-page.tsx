@@ -57,6 +57,7 @@ export function CheckoutPage() {
   const locale = usePreferencesStore((state) => state.locale);
   const items = useCartStore((state) => state.items);
   const promoCode = useCartStore((state) => state.promoCode);
+  const quote = useCartStore((state) => state.quote);
   const clearCart = useCartStore((state) => state.clear);
   const events = useEventStore((state) => state.events);
   const orders = useOrderStore((state) => state.orders);
@@ -79,7 +80,7 @@ export function CheckoutPage() {
   const [formError, setFormError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
-  const pricing = useMemo(
+  const localPricing = useMemo(
     () =>
       calculateCartTotals({
         items,
@@ -90,6 +91,7 @@ export function CheckoutPage() {
       }),
     [items, events, orders, promoCode, promos],
   );
+  const pricing = quote ?? localPricing;
 
   useEffect(() => {
     if (!user) return;
@@ -176,7 +178,7 @@ export function CheckoutPage() {
     toast.success(t("checkout.useBuyer"));
   };
 
-  const submit = () => {
+  const submit = async () => {
     const errors: Record<string, string> = {};
     if (!buyer.name.trim()) errors["buyer.name"] = t("errors.required");
     if (!buyer.email.trim()) errors["buyer.email"] = t("errors.required");
@@ -208,29 +210,34 @@ export function CheckoutPage() {
     }
     setFormError(null);
     setProcessing(true);
-    window.setTimeout(() => {
-      const methodLabel = paymentMethods.find(
-        (method) => method.id === paymentMethod,
-      );
-      const result = createOrder({
+    try {
+      const result = await createOrder({
         buyer,
-        paymentMethod: methodLabel ? t(methodLabel.labelKey) : paymentMethod,
+        paymentMethod,
         promoCode,
         items,
         attendees,
         simulateFailure,
         user,
       });
-      setProcessing(false);
       if (simulateFailure) {
         toast.error(t("checkout.failed"));
         router.push(`/checkout/result/${result.order.id}`);
         return;
       }
-      clearCart();
+      await clearCart();
       toast.success(t("checkout.success"));
       router.push(`/checkout/success/${result.order.id}`);
-    }, 1200);
+    } catch (error) {
+      const inventoryConflict =
+        error instanceof Error && error.message === "INVENTORY_CONFLICT";
+      toast.error(t("checkout.failed"));
+      setFormError(
+        inventoryConflict ? t("cart.invalidSelection") : t("errors.generic"),
+      );
+    } finally {
+      setProcessing(false);
+    }
   };
 
   return (
@@ -596,6 +603,16 @@ export function CheckoutPage() {
                     {formatIDR(pricing.total, locale)}
                   </span>
                 </div>
+                {pricing.expiresAt ? (
+                  <p className="text-[11px] text-muted">
+                    Reservasi aktif sampai{" "}
+                    {new Date(pricing.expiresAt).toLocaleTimeString("id-ID", {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                    .
+                  </p>
+                ) : null}
               </div>
               <p className="mt-4 flex items-start gap-2 text-[11px] leading-relaxed text-muted">
                 <ShieldCheck className="mt-0.5 size-3.5 shrink-0 text-success" />

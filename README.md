@@ -2,20 +2,23 @@
 
 **Your Gateway to Every Experience.**
 
-Eventra is a premium, responsive event discovery and ticketing showcase for Rumah Kodingku. It includes a customer experience, simulated checkout, digital tickets, and a complete organizer workspace.
+Eventra is a premium, responsive event discovery and ticketing demo for Rumah Kodingku. It includes a customer experience, simulated checkout, digital tickets, and a complete organizer workspace.
 
-> This is a frontend-only showcase. There is no real payment, inventory lock, authentication, email delivery, or QR validation. All data lives in the browser.
+> Payments, email delivery, and QR validation are simulated. The catalog, identity, inventory, cart, orders, tickets, reviews, wishlist, notifications, analytics, and organizer settings are served by the Go API and MySQL.
 
 ## Stack
 
 - Next.js `16.4.6` with App Router and Cache Components
 - React `19.3.0` + TypeScript
+- Go API with Gin, GORM, MySQL 8.4, Redis 8
+- S3-compatible image upload adapter (MinIO in local compose)
 - Tailwind CSS `4.3.3` via `@tailwindcss/turbopack`
 - Radix UI primitives for dialogs, menus, tabs and switches
-- Zustand for local session, cart, wishlist and demo data
+- Zustand for local UI preferences and mock-only test fixtures
+- TanStack Query for API-backed data
 - `next-intl` for Indonesian/English UI copy (no locale prefix)
 - Recharts for organizer analytics
-- `react-qr-code` for demo ticket QR codes
+- `react-qr-code` for opaque demo ticket QR codes
 - Sonner for toast feedback
 - Vitest and Playwright for tests
 - Biome for linting and formatting
@@ -24,12 +27,26 @@ Eventra is a premium, responsive event discovery and ticketing showcase for Ruma
 
 ```bash
 npm install
-npm run dev
+MYSQL_PORT=3307 docker compose up -d mysql redis
+cd apps/api
+export APP_ENV=development
+export DATABASE_URL='eventra:eventra@tcp(127.0.0.1:3307)/eventra?parseTime=true&charset=utf8mb4&loc=UTC'
+export REDIS_URL='redis://127.0.0.1:6379/0'
+export MIGRATIONS_DIR=./migrations
+go run ./cmd/migrate up
+go run ./cmd/seed
+CATALOG_SEED_FILE=./seed/catalog.json go run ./cmd/seed-catalog
+go run ./cmd/api
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+In another terminal:
 
-The repository uses npm workspaces and Turborepo. The Next.js app lives in `apps/web`; run commands from the repository root.
+```bash
+cd apps/web
+NEXT_PUBLIC_API_BASE_URL=http://localhost:8080/api/v1 npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000). API mode is the default. For the local mock showcase, set `NEXT_PUBLIC_API_MODE=mock`.
 
 Production build:
 
@@ -101,18 +118,24 @@ npm run typecheck
 npm run lint
 npm run test:run
 npm run test:e2e
+npm run test:e2e:api
 ```
 
-- Unit tests cover pricing, fees, promo validation, ticket availability, seat layouts, IDs and CSV escaping.
-- Playwright covers discovery, guest cart, logo light/dark rendering, organizer event editor and seat inventory, attendee detail, search keyboard navigation, seat zoom, event pagination, organizer demo login, and WCAG serious/critical checks on public and organizer pages.
+- Mock E2E starts Next.js with `NEXT_PUBLIC_API_MODE=mock`.
+- API E2E resets `eventra_e2e`, seeds MySQL, starts the Go API, and covers discovery, organizer event CRUD, customer purchase, wallet, notifications, wishlist, reviews, settings, and check-in.
+- Go integration tests require MySQL: `TEST_INVENTORY_DATABASE_URL` and `TEST_ENGAGEMENT_DATABASE_URL`.
 - Firefox smoke/logo coverage is available with `npm run test:e2e:firefox`.
 - Manual QA should still cover print layout, full bilingual content review, and long-session organizer flows.
 
 ## Local data
 
-Keys are namespaced with `eventra-` and are validated by the client stores. The reset action removes the relevant browser keys and reloads the seed state.
+API mode stores customer and organizer data in MySQL. Browser storage keeps preferences such as locale, theme, recent views, and mock fixtures under `eventra-*` keys. The in-app reset action only clears browser-local preferences; it does not reset MySQL.
 
-No real card number, CVV, bank credential, OTP or sensitive identity data is collected. QR codes contain only a demo ticket code.
+No real card number, CVV, bank credential, OTP or sensitive identity data is collected. QR codes contain only an opaque demo ticket code.
+
+## Backup and restore
+
+See [`docs/runbooks/backup-restore.md`](docs/runbooks/backup-restore.md). `scripts/backup-mysql.sh` writes a gzipped mysqldump; `scripts/restore-mysql.sh` restores into a separate database.
 
 ## Logo and assets
 
@@ -129,12 +152,14 @@ The Eventra logo is a showcase brand asset and not a cleared commercial trademar
 
 ## Known limitations
 
-- No backend, real payment gateway, real inventory authority or secure authorization.
-- Availability and seat state are illustrative and can be changed by clearing browser data.
-- Setting `next dev` uses public demo credentials; role guards are UX only.
+- Payment, email, and QR scanning hardware integration are simulated.
+- Event checkout is single-event per order.
+- Ticket-type editing is persisted through the event update endpoint; inventory quota cannot drop below sold plus reserved.
+- Guest wishlist is browser-local and is not merged into the server wishlist on login.
 - Event content remains in Indonesian while UI chrome is bilingual.
-- Reviews are demo-only and gated by a locally owned ticket.
 - Organizer payout fields are masked sample data only.
+- MinIO is defined in compose, but the image could not be pulled in the development environment where this was verified; the S3 adapter is covered by unit tests.
+- Offsite encrypted backups, staging deployment, and rollback drills depend on the deployment platform and are not implemented here.
 
 ## Documentation
 

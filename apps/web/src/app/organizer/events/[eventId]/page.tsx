@@ -31,7 +31,7 @@ import { formatDateTime } from "@/lib/dates";
 import { getTicketAvailability } from "@/lib/pricing";
 import { useCatalog } from "@/services/hooks/use-catalog";
 import { useEventStore } from "@/services/hooks/use-event-store";
-import { useOrderStore } from "@/services/hooks/use-order-store";
+import { useOrganizerData } from "@/services/hooks/use-organizer-data";
 import { usePreferencesStore } from "@/stores/preferences";
 
 export default function OrganizerEventOverviewPage() {
@@ -40,7 +40,7 @@ export default function OrganizerEventOverviewPage() {
   const params = useParams<{ eventId: string }>();
   const locale = usePreferencesStore((state) => state.locale);
   const events = useEventStore((state) => state.events);
-  const orders = useOrderStore((state) => state.orders);
+  const { orders } = useOrganizerData();
   const event = events.find((item) => item.id === params.eventId);
 
   if (!event) {

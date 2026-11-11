@@ -12,14 +12,14 @@ import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
-import { Input } from "@/components/ui/input";
+import { Input, Select } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useHydrated } from "@/hooks/use-hydrated";
 import { formatDateTime } from "@/lib/dates";
 import { getSeatLabel } from "@/lib/seat";
 import { useCatalog } from "@/services/hooks/use-catalog";
 import { useEventStore } from "@/services/hooks/use-event-store";
-import { useOrderStore } from "@/services/hooks/use-order-store";
+import { useOrganizerData } from "@/services/hooks/use-organizer-data";
 import { usePreferencesStore } from "@/stores/preferences";
 
 export default function OrganizerCheckInPage() {
@@ -27,15 +27,16 @@ export default function OrganizerCheckInPage() {
   const { venues } = useCatalog();
   const hydrated = useHydrated();
   const locale = usePreferencesStore((state) => state.locale);
-  const tickets = useOrderStore((state) => state.tickets);
-  const attendees = useOrderStore((state) => state.attendees);
-  const _orders = useOrderStore((state) => state.orders);
-  const checkInTicket = useOrderStore((state) => state.checkInTicket);
+  const { tickets, attendees, checkInTicket } = useOrganizerData();
   const events = useEventStore((state) => state.events);
   const [code, setCode] = useState("");
+  const [eventId, setEventId] = useState("");
   const [foundId, setFoundId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+  const scopedTickets = eventId
+    ? tickets.filter((ticket) => ticket.eventId === eventId)
+    : [];
 
   const found = foundId
     ? tickets.find((ticket) => ticket.id === foundId)
@@ -49,7 +50,7 @@ export default function OrganizerCheckInPage() {
   const foundVenue = foundEvent
     ? venues.find((venue) => venue.id === foundEvent.venueId)
     : undefined;
-  const recent = tickets
+  const recent = scopedTickets
     .filter((ticket) => ticket.status === "USED" && ticket.checkedInAt)
     .sort(
       (a, b) =>
@@ -61,10 +62,15 @@ export default function OrganizerCheckInPage() {
   const search = () => {
     const normalized = code.trim().toUpperCase();
     if (!normalized) return;
-    const ticket = tickets.find(
+    setMessage(null);
+    if (!eventId) {
+      setFoundId(null);
+      setError("Pilih event terlebih dahulu.");
+      return;
+    }
+    const ticket = scopedTickets.find(
       (item) => item.ticketCode.toUpperCase() === normalized,
     );
-    setMessage(null);
     if (!ticket) {
       setFoundId(null);
       setError(t("organizer.ticketNotFound"));
@@ -74,9 +80,9 @@ export default function OrganizerCheckInPage() {
     setError(ticket.status === "USED" ? t("organizer.alreadyUsed") : null);
   };
 
-  const confirm = () => {
+  const confirm = async () => {
     if (!found) return;
-    const result = checkInTicket(found.id);
+    const result = await checkInTicket(found.id);
     if (!result.ok) {
       setError(
         result.reason === "already_used"
@@ -113,6 +119,31 @@ export default function OrganizerCheckInPage() {
 
       <div className="grid gap-5 xl:grid-cols-[1fr_1fr]">
         <section className="rounded-3xl border border-line bg-surface p-5 sm:p-6">
+          <div className="mb-3">
+            <label
+              className="mb-1.5 block text-xs font-medium text-ink"
+              htmlFor="checkin-event"
+            >
+              Event
+            </label>
+            <Select
+              id="checkin-event"
+              value={eventId}
+              onChange={(event) => {
+                setEventId(event.target.value);
+                setFoundId(null);
+                setError(null);
+                setMessage(null);
+              }}
+            >
+              <option value="">Pilih event</option>
+              {events.map((event) => (
+                <option key={event.id} value={event.id}>
+                  {event.title}
+                </option>
+              ))}
+            </Select>
+          </div>
           <form
             className="flex flex-col gap-2 sm:flex-row"
             onSubmit={(event) => {

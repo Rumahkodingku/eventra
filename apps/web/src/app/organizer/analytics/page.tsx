@@ -15,6 +15,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DemoNotice } from "@/components/ui/demo-notice";
@@ -32,8 +33,10 @@ import { useHydrated } from "@/hooks/use-hydrated";
 import { cn } from "@/lib/cn";
 import { downloadCsv } from "@/lib/csv";
 import { formatIDR, formatNumber, formatPercent } from "@/lib/currency";
+import { downloadOrganizerAnalyticsCsv } from "@/services/api/analytics";
 import { useEventStore } from "@/services/hooks/use-event-store";
-import { useOrderStore } from "@/services/hooks/use-order-store";
+import { useOrganizerData } from "@/services/hooks/use-organizer-data";
+import { apiMode } from "@/services/repositories";
 import { usePreferencesStore } from "@/stores/preferences";
 
 const ranges = [
@@ -48,9 +51,7 @@ export default function OrganizerAnalyticsPage() {
   const hydrated = useHydrated();
   const locale = usePreferencesStore((state) => state.locale);
   const events = useEventStore((state) => state.events);
-  const orders = useOrderStore((state) => state.orders);
-  const tickets = useOrderStore((state) => state.tickets);
-  const attendees = useOrderStore((state) => state.attendees);
+  const { orders, tickets, attendees } = useOrganizerData();
   const [range, setRange] = useState<(typeof ranges)[number]["key"]>("30");
   const activeRange = ranges.find((item) => item.key === range) ?? ranges[1];
   const start = Date.now() - activeRange.days * 86_400_000;
@@ -143,7 +144,15 @@ export default function OrganizerAnalyticsPage() {
       .slice(0, 5);
   }, [confirmed]);
 
-  const exportCsv = () => {
+  const exportCsv = async () => {
+    if (apiMode) {
+      try {
+        await downloadOrganizerAnalyticsCsv();
+      } catch {
+        toast.error("CSV export gagal.");
+      }
+      return;
+    }
     downloadCsv(
       "eventra-analytics.csv",
       [

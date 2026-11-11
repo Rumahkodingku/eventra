@@ -9,12 +9,17 @@ import type {
   VenueLayout,
 } from "@/domain/types";
 import { api } from "@/services/api/client";
-import { organizerRepository as mockOrganizerRepository } from "@/services/mock";
+import {
+  listOrganizerAttendees,
+  listOrganizerOrders,
+  listOrganizerTickets,
+} from "@/services/api/orders";
 import type {
   CatalogView,
   CreateEventInput,
   EventRepository,
   OrganizerRepository,
+  TicketRepository,
 } from "@/services/repositories/types";
 
 type ApiEvent = components["schemas"]["EventDetail"];
@@ -214,6 +219,23 @@ async function listEvents(): Promise<Event[]> {
   return result.data.items.map(mapEvent);
 }
 
+export const apiTicketRepository: TicketRepository = {
+  listTypes: async (eventId) => {
+    const result = await api.GET("/events/{eventId}/ticket-types", {
+      params: { path: { eventId } },
+    });
+    return (result.data?.items ?? []).map(mapTicketType);
+  },
+  getAvailability: async (eventId) => {
+    const result = await api.GET("/events/{eventId}/ticket-types", {
+      params: { path: { eventId } },
+    });
+    const ticketTypes = (result.data?.items ?? []).map(mapTicketType);
+    const remaining = result.data?.remaining ?? {};
+    return { eventId, ticketTypes, remaining };
+  },
+};
+
 export const apiEventRepository: EventRepository = {
   list: listEvents,
   getBySlug: async (slug) => {
@@ -290,7 +312,7 @@ export const apiOrganizerRepository: OrganizerRepository = {
   updateEvent: apiEventRepository.updateEvent,
   deleteEvent: apiEventRepository.deleteEvent,
   markSeatsSold: apiEventRepository.markSeatsSold,
-  listOrders: mockOrganizerRepository.listOrders,
-  listAttendees: mockOrganizerRepository.listAttendees,
-  listTickets: mockOrganizerRepository.listTickets,
+  listOrders: listOrganizerOrders,
+  listAttendees: listOrganizerAttendees,
+  listTickets: listOrganizerTickets,
 };

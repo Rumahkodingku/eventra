@@ -24,14 +24,14 @@ import { formatIDR } from "@/lib/currency";
 import { formatDateTime } from "@/lib/dates";
 import { getSeatLabel } from "@/lib/seat";
 import { useEventStore } from "@/services/hooks/use-event-store";
-import { useOrderStore } from "@/services/hooks/use-order-store";
+import { useOrganizerData } from "@/services/hooks/use-organizer-data";
 import { usePreferencesStore } from "@/stores/preferences";
 
 export default function OrganizerOrdersPage() {
   const t = useTranslations();
   const hydrated = useHydrated();
   const locale = usePreferencesStore((state) => state.locale);
-  const orders = useOrderStore((state) => state.orders);
+  const { orders } = useOrganizerData();
   const events = useEventStore((state) => state.events);
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("ALL");

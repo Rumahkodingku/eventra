@@ -44,7 +44,7 @@ import { formatIDR, formatNumber, formatPercent } from "@/lib/currency";
 import { formatDateTime, formatShortDate } from "@/lib/dates";
 import { useCatalog } from "@/services/hooks/use-catalog";
 import { useEventStore } from "@/services/hooks/use-event-store";
-import { useOrderStore } from "@/services/hooks/use-order-store";
+import { useOrganizerData } from "@/services/hooks/use-organizer-data";
 import { useSessionStore } from "@/services/hooks/use-session-store";
 import { usePreferencesStore } from "@/stores/preferences";
 
@@ -62,8 +62,7 @@ export default function OrganizerDashboardPage() {
   const locale = usePreferencesStore((state) => state.locale);
   const user = useSessionStore((state) => state.user);
   const events = useEventStore((state) => state.events);
-  const orders = useOrderStore((state) => state.orders);
-  const attendees = useOrderStore((state) => state.attendees);
+  const { orders, attendees } = useOrganizerData();
   const [range, setRange] = useState<(typeof ranges)[number]["key"]>("30");
   const activeRange = ranges.find((item) => item.key === range) ?? ranges[1];
   const startTime = Date.now() - activeRange.days * 86_400_000;

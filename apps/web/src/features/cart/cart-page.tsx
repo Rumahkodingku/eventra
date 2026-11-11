@@ -5,7 +5,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useMemo, useState } from "react";
-import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DemoNotice } from "@/components/ui/demo-notice";
@@ -27,6 +26,7 @@ import { useCartStore } from "@/services/hooks/use-cart-store";
 import { useCatalog } from "@/services/hooks/use-catalog";
 import { useEventStore } from "@/services/hooks/use-event-store";
 import { useOrderStore } from "@/services/hooks/use-order-store";
+import { apiMode } from "@/services/repositories";
 import { usePreferencesStore } from "@/stores/preferences";
 
 export function CartPage() {
@@ -36,6 +36,7 @@ export function CartPage() {
   const locale = usePreferencesStore((state) => state.locale);
   const items = useCartStore((state) => state.items);
   const promoCode = useCartStore((state) => state.promoCode);
+  const quote = useCartStore((state) => state.quote);
   const setPromoCode = useCartStore((state) => state.setPromoCode);
   const updateQuantity = useCartStore((state) => state.updateQuantity);
   const removeItem = useCartStore((state) => state.removeItem);
@@ -45,7 +46,7 @@ export function CartPage() {
   const [promoError, setPromoError] = useState<string | null>(null);
   const [promoSuccess, setPromoSuccess] = useState<string | null>(null);
 
-  const pricing = useMemo(
+  const localPricing = useMemo(
     () =>
       calculateCartTotals({
         items,
@@ -56,6 +57,7 @@ export function CartPage() {
       }),
     [items, events, orders, promoCode, promos],
   );
+  const pricing = quote ?? localPricing;
 
   const issueItems = items.filter((item) => {
     const event = events.find((entry) => entry.id === item.eventId);
@@ -69,32 +71,38 @@ export function CartPage() {
     return false;
   });
 
-  const applyPromo = () => {
-    const result = calculateCartTotals({
-      items,
-      events,
-      promos,
-      orders,
-      promoCode: promoInput,
-    });
-    if (result.error || !result.promo) {
-      const message =
-        result.error === "expired"
-          ? t("cart.promoExpired")
-          : result.error === "min"
-            ? t("cart.promoMin")
-            : result.error === "ineligible"
-              ? t("cart.promoIneligible")
-              : t("cart.promoInvalid");
-      setPromoError(message);
+  const applyPromo = async () => {
+    if (!apiMode) {
+      const result = calculateCartTotals({
+        items,
+        events,
+        promos,
+        orders,
+        promoCode: promoInput,
+      });
+      if (result.error || !result.promo) {
+        const message =
+          result.error === "expired"
+            ? t("cart.promoExpired")
+            : result.error === "min"
+              ? t("cart.promoMin")
+              : result.error === "ineligible"
+                ? t("cart.promoIneligible")
+                : t("cart.promoInvalid");
+        setPromoError(message);
+        setPromoSuccess(null);
+        return;
+      }
+    }
+    const applied = await setPromoCode(promoInput);
+    if (!applied.ok) {
+      setPromoError(t("cart.promoInvalid"));
       setPromoSuccess(null);
       return;
     }
-    setPromoCode(result.promo.code);
     setPromoError(null);
-    setPromoSuccess(t("cart.promoApplied", { code: result.promo.code }));
+    setPromoSuccess(t("cart.promoApplied", { code: promoInput }));
     setPromoInput("");
-    toast.success(t("cart.promoApplied", { code: result.promo.code }));
   };
 
   if (!hydrated) {
@@ -303,6 +311,16 @@ export function CartPage() {
                     {formatIDR(pricing.total, locale)}
                   </span>
                 </div>
+                {pricing.expiresAt ? (
+                  <p className="text-[11px] text-muted">
+                    Harga dan stok dikunci sampai{" "}
+                    {new Date(pricing.expiresAt).toLocaleTimeString("id-ID", {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                    .
+                  </p>
+                ) : null}
               </div>
 
               <div className="mt-5 border-t border-line pt-5">
@@ -318,7 +336,7 @@ export function CartPage() {
                     <button
                       type="button"
                       onClick={() => {
-                        setPromoCode(undefined);
+                        void setPromoCode(undefined);
                         setPromoSuccess(null);
                         setPromoError(null);
                       }}
@@ -343,7 +361,7 @@ export function CartPage() {
                       type="button"
                       size="sm"
                       variant="outline"
-                      onClick={applyPromo}
+                      onClick={() => void applyPromo()}
                     >
                       {t("cart.apply")}
                     </Button>

@@ -48,6 +48,15 @@ Use same-site routing where possible (for example `/api/*` to API) to simplify s
 7. Organizer access checks permission AND organization/resource ownership.
 8. Architecture is a plan until implementation gates pass.
 
+## Implementation status
+
+Phases 0–11 and the code-level parts of Phase 12 are implemented on `migration/fullstack`:
+
+- Go API with MySQL/Redis, migrations, identity, catalog, inventory, cart, checkout, orders, mock payment, tickets, check-in, engagement, analytics, and organizer settings.
+- Frontend API adapters are the default runtime. `NEXT_PUBLIC_API_MODE=mock` keeps the mock repository for tests.
+- API-backed Playwright covers discovery, organizer event CRUD, customer purchase, failure state, wallet, notifications, wishlist, reviews, settings, and check-in.
+- Remaining Phase 12 items are infrastructure-dependent: offsite encrypted backups, staging deployment, rollback drill, load tooling, and dashboards/alerts.
+
 ## Open vendor decisions
 
 Payment provider, email provider, object storage vendor, VPS/domain/DNS, error tracking and metrics provider. Select behind adapters after small implementation spikes.

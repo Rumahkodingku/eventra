@@ -20,6 +20,7 @@ export default function OrganizerSettingsPage() {
   const updateSettings = useOrganizerSettingsStore(
     (state) => state.updateSettings,
   );
+  const saveSettings = useOrganizerSettingsStore((state) => state.saveSettings);
 
   if (!hydrated) {
     return (
@@ -42,7 +43,16 @@ export default function OrganizerSettingsPage() {
           </h1>
           <p className="mt-2 text-sm text-muted">{t("organizer.subtitle")}</p>
         </div>
-        <Button onClick={() => toast.success(t("organizer.saved"))}>
+        <Button
+          onClick={async () => {
+            try {
+              await saveSettings(settings);
+              toast.success(t("organizer.saved"));
+            } catch {
+              toast.error(t("errors.generic"));
+            }
+          }}
+        >
           <Save className="size-4" /> {t("common.save")}
         </Button>
       </div>

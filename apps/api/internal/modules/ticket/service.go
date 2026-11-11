@@ -127,6 +127,23 @@ func (s *Service) CheckIn(ctx context.Context, eventID, organizationID, operator
 	return s.GetByID(ctx, ticket.ID)
 }
 
+func (s *Service) ListByOrder(ctx context.Context, orderID string) ([]Ticket, error) {
+	var tickets []Ticket
+	err := s.db.WithContext(ctx).Where("order_id = ?", orderID).Order("issued_at ASC").Find(&tickets).Error
+	return tickets, err
+}
+
+func (s *Service) ListForOrganization(ctx context.Context, organizationID string) ([]Ticket, error) {
+	var tickets []Ticket
+	err := s.db.WithContext(ctx).
+		Table("tickets").
+		Joins("JOIN events ON events.id = tickets.event_id").
+		Where("events.organization_id = ?", organizationID).
+		Order("tickets.issued_at DESC").
+		Find(&tickets).Error
+	return tickets, err
+}
+
 func (s *Service) GetByID(ctx context.Context, id string) (Ticket, error) {
 	var ticket Ticket
 	if err := s.db.WithContext(ctx).Where("id = ?", id).First(&ticket).Error; err != nil {

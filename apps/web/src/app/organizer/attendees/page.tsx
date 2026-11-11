@@ -23,16 +23,14 @@ import { useHydrated } from "@/hooks/use-hydrated";
 import { formatDateTime } from "@/lib/dates";
 import { getSeatLabel } from "@/lib/seat";
 import { useEventStore } from "@/services/hooks/use-event-store";
-import { useOrderStore } from "@/services/hooks/use-order-store";
+import { useOrganizerData } from "@/services/hooks/use-organizer-data";
 import { usePreferencesStore } from "@/stores/preferences";
 
 export default function OrganizerAttendeesPage() {
   const t = useTranslations();
   const hydrated = useHydrated();
   const locale = usePreferencesStore((state) => state.locale);
-  const attendees = useOrderStore((state) => state.attendees);
-  const tickets = useOrderStore((state) => state.tickets);
-  const orders = useOrderStore((state) => state.orders);
+  const { attendees, tickets, orders } = useOrganizerData();
   const events = useEventStore((state) => state.events);
   const [search, setSearch] = useState("");
   const [eventId, setEventId] = useState("ALL");

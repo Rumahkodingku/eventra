@@ -1726,11 +1726,11 @@ Phase 6.
 
 #### Task 7.6 — Frontend integration
 
-- [ ] Fetch availability from API.
-- [ ] Keep selected seats as provisional UI state.
-- [ ] Handle `409 INVENTORY_CONFLICT` by refreshing seat map.
-- [ ] Display reservation expiry from API.
-- [ ] Remove fake local hold timer.
+- [x] Fetch availability from API.
+- [x] Keep selected seats as provisional UI state.
+- [x] Handle `409 INVENTORY_CONFLICT` by refreshing seat map.
+- [x] Display reservation expiry from API.
+- [x] Remove fake local hold timer.
 
 **Verification:** seat conflict E2E; expiry UI test.
 
@@ -1840,11 +1840,11 @@ Phase 7.
 
 #### Task 8.5 — Frontend cart/quote
 
-- [ ] Replace mock cart adapter with API adapter.
-- [ ] Replace local totals with server quote.
-- [ ] Show reservation expiry and conflict states.
-- [ ] Keep optimistic UI but reconcile with server response.
-- [ ] Remove client-side promo authority.
+- [x] Replace mock cart adapter with API adapter.
+- [x] Replace local totals with server quote.
+- [x] Show reservation expiry and conflict states.
+- [x] Keep optimistic UI but reconcile with server response.
+- [x] Remove client-side promo authority.
 
 **Verification:** cart/checkout E2E against API.
 
@@ -1958,10 +1958,10 @@ Phase 8.
 
 #### Task 9.5 — Frontend result
 
-- [ ] Success/failure pages read server state.
-- [ ] Do not use browser redirect as confirmation.
-- [ ] Poll or fetch order status after redirect.
-- [ ] Handle pending/failed/confirmed states.
+- [x] Success/failure pages read server state.
+- [x] Do not use browser redirect as confirmation.
+- [x] Poll or fetch order status after redirect.
+- [x] Handle pending/failed/confirmed states.
 
 **Verification:** E2E success/failure with mock provider.
 
@@ -2069,11 +2069,11 @@ Phase 9.
 
 #### Task 10.5 — Frontend integration
 
-- [ ] Replace ticket wallet mock adapter.
-- [ ] Render QR from opaque token.
-- [ ] Organizer selects event before check-in.
-- [ ] Handle conflict/not-found states.
-- [ ] Keep print/download behavior.
+- [x] Replace ticket wallet mock adapter.
+- [x] Render QR from opaque token.
+- [x] Organizer selects event before check-in.
+- [x] Handle conflict/not-found states.
+- [x] Keep print/download behavior.
 
 **Verification:** ticket E2E; check-in E2E.
 
@@ -2255,12 +2255,12 @@ Phase 11.
 
 #### Task 12.1 — Security review
 
-- [ ] Review authz matrix.
-- [ ] Review CSRF/CORS/cookies.
-- [ ] Review webhook signature and replay.
-- [ ] Review upload validation.
-- [ ] Run dependency and container scans.
-- [ ] Fix all critical/high findings.
+- [x] Review authz matrix.
+- [x] Review CSRF/CORS/cookies.
+- [x] Review webhook signature and replay.
+- [x] Review upload validation.
+- [x] Run dependency and container scans.
+- [x] Fix all critical/high findings.
 
 **Verification:** no critical/high findings.
 
@@ -2275,20 +2275,20 @@ Phase 11.
 
 #### Task 12.3 — Observability
 
-- [ ] Structured logs with request ID.
-- [ ] Metrics for HTTP, DB, Redis, checkout, webhook, expiry, check-in.
+- [x] Structured logs with request ID.
+- [x] Metrics for HTTP, DB, Redis, checkout, webhook, expiry, check-in.
 - [ ] Alerts for errors, disk, DB, backup, webhook failures.
-- [ ] PII scrubbing.
+- [x] PII scrubbing.
 
 **Verification:** dashboards and alerts tested.
 
 #### Task 12.4 — Backup and restore
 
-- [ ] Automated encrypted MySQL backups.
+- [x] Automated encrypted MySQL backups.
 - [ ] Offsite copy.
-- [ ] Restore into separate environment.
-- [ ] Verify invariants after restore.
-- [ ] Document RPO/RTO.
+- [x] Restore into separate environment.
+- [x] Verify invariants after restore.
+- [x] Document RPO/RTO.
 
 **Verification:** restore drill passes.
 
@@ -2305,20 +2305,20 @@ Phase 11.
 
 #### Task 12.6 — Remove mock fallback
 
-- [ ] Remove runtime mock adapters.
-- [ ] Fail clearly when API is unavailable.
-- [ ] Keep mock adapters only under test.
-- [ ] Update error states.
+- [x] Remove runtime mock adapters.
+- [x] Fail clearly when API is unavailable.
+- [x] Keep mock adapters only under test.
+- [x] Update error states.
 
 **Verification:** API-down test shows clear failure, not mock data.
 
 #### Task 12.7 — Documentation
 
-- [ ] Update README.
-- [ ] Update AGENTS.
-- [ ] Add runbooks.
-- [ ] Update decision log.
-- [ ] Document known limitations.
+- [x] Update README.
+- [x] Update AGENTS.
+- [x] Add runbooks.
+- [x] Update decision log.
+- [x] Document known limitations.
 
 **Verification:** docs match behavior.
 

@@ -79,7 +79,7 @@ func (s *Service) Create(ctx context.Context, principal, idempotencyKey string, 
 		return Order{}, err
 	}
 
-	reservation, err := s.inventory.Get(ctx, input.ReservationID)
+	reservation, err := s.inventory.GetForPrincipal(ctx, principal, input.ReservationID)
 	if err != nil || reservation.PrincipalKey != principal || reservation.Status != "ACTIVE" || reservation.ExpiresAt.Before(s.now()) {
 		return Order{}, ErrReservation
 	}
@@ -265,6 +265,53 @@ func userIDFromPrincipal(principal string) *string {
 		return nil
 	}
 	return &id
+}
+
+func (s *Service) ListForOrganization(ctx context.Context, organizationID string) ([]Order, error) {
+	var orderIDs []string
+	err := s.db.WithContext(ctx).Table("orders").
+		Select("DISTINCT orders.id").
+		Joins("JOIN order_items ON order_items.order_id = orders.id").
+		Joins("JOIN events ON events.id = order_items.event_id").
+		Where("events.organization_id = ?", organizationID).
+		Pluck("orders.id", &orderIDs).Error
+	if err != nil {
+		return nil, err
+	}
+	if len(orderIDs) == 0 {
+		return []Order{}, nil
+	}
+	var orders []Order
+	err = s.db.WithContext(ctx).Preload("Items").Where("id IN ?", orderIDs).
+		Order("created_at DESC").Find(&orders).Error
+	return orders, err
+}
+
+func (s *Service) ListAttendees(ctx context.Context, principal string) ([]Attendee, error) {
+	var attendees []Attendee
+	err := s.db.WithContext(ctx).Table("attendees").
+		Joins("JOIN orders ON orders.id = attendees.order_id").
+		Where("orders.principal_key = ?", principal).
+		Order("attendees.created_at DESC").
+		Find(&attendees).Error
+	return attendees, err
+}
+
+func (s *Service) ListAttendeesForOrganization(ctx context.Context, organizationID string) ([]Attendee, error) {
+	var attendees []Attendee
+	err := s.db.WithContext(ctx).Table("attendees").
+		Select("DISTINCT attendees.*").
+		Joins("JOIN orders ON orders.id = attendees.order_id").
+		Joins("JOIN order_items ON order_items.order_id = orders.id").
+		Joins("JOIN events ON events.id = order_items.event_id").
+		Where("events.organization_id = ?", organizationID).
+		Order("attendees.created_at DESC").
+		Find(&attendees).Error
+	return attendees, err
+}
+
+func (s *Service) TicketsForOrder(ctx context.Context, orderID string) ([]ticket.Ticket, error) {
+	return s.ticket.ListByOrder(ctx, orderID)
 }
 
 func (s *Service) List(ctx context.Context, principal string) ([]Order, error) {

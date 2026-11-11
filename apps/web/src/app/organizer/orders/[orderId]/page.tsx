@@ -21,18 +21,15 @@ import { formatIDR } from "@/lib/currency";
 import { formatDateTime } from "@/lib/dates";
 import { getSeatLabel } from "@/lib/seat";
 import { useEventStore } from "@/services/hooks/use-event-store";
-import { useOrderStore } from "@/services/hooks/use-order-store";
+import { useOrganizerData } from "@/services/hooks/use-organizer-data";
 import { usePreferencesStore } from "@/stores/preferences";
 
 export default function OrganizerOrderDetailPage() {
   const t = useTranslations();
   const params = useParams<{ orderId: string }>();
   const locale = usePreferencesStore((state) => state.locale);
-  const order = useOrderStore((state) =>
-    state.orders.find((item) => item.id === params.orderId),
-  );
-  const tickets = useOrderStore((state) => state.tickets);
-  const attendees = useOrderStore((state) => state.attendees);
+  const { orders, tickets, attendees } = useOrganizerData();
+  const order = orders.find((item) => item.id === params.orderId);
   const events = useEventStore((state) => state.events);
 
   if (!order) {

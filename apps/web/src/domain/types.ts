@@ -290,6 +290,7 @@ export interface CartPricing {
   discount: number;
   total: number;
   promo?: PromoCode;
+  expiresAt?: string;
   error?: string;
 }
 

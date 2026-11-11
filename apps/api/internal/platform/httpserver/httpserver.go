@@ -24,6 +24,7 @@ import (
 	"github.com/eventra/eventra/apps/api/internal/modules/review"
 	"github.com/eventra/eventra/apps/api/internal/modules/ticket"
 	"github.com/eventra/eventra/apps/api/internal/modules/wishlist"
+	"github.com/eventra/eventra/apps/api/internal/platform/observability"
 )
 
 type Dependencies struct {
@@ -46,6 +47,7 @@ func NewRouter(cfg Config, log *slog.Logger, deps Dependencies) *gin.Engine {
 	router := gin.New()
 	router.Use(RequestID())
 	router.Use(Recovery(log))
+	router.Use(Metrics())
 	router.Use(RequestLogger(log))
 	router.Use(BodyLimit(1 << 20))
 	router.Use(Timeout(15 * time.Second))
@@ -88,6 +90,10 @@ func NewRouter(cfg Config, log *slog.Logger, deps Dependencies) *gin.Engine {
 	}
 	v1.GET("/health/live", live)
 	v1.GET("/health/ready", ready(deps))
+	router.GET("/metrics", func(c *gin.Context) {
+		c.Header("Content-Type", "text/plain; version=0.0.4; charset=utf-8")
+		c.String(http.StatusOK, observability.Render())
+	})
 	return router
 }
 
@@ -163,6 +169,14 @@ func Recovery(log *slog.Logger) gin.HandlerFunc {
 			}
 		}()
 		c.Next()
+	}
+}
+
+func Metrics() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		start := time.Now()
+		c.Next()
+		observability.RecordHTTP(c.Request.Method, c.FullPath(), c.Writer.Status(), time.Since(start))
 	}
 }
 

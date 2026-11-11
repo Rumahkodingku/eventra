@@ -32,6 +32,7 @@ import { getTicketAvailability, isEventPurchasable } from "@/lib/pricing";
 import { getTicketForSection } from "@/lib/seat";
 import { useCartStore } from "@/services/hooks/use-cart-store";
 import { useCatalog } from "@/services/hooks/use-catalog";
+import { useEventAvailability } from "@/services/hooks/use-event-availability";
 import { useEventStore } from "@/services/hooks/use-event-store";
 import { usePreferencesStore } from "@/stores/preferences";
 
@@ -43,7 +44,8 @@ export function TicketSelection() {
   const events = useEventStore((state) => state.events);
   const addItem = useCartStore((state) => state.addItem);
   const locale = usePreferencesStore((state) => state.locale);
-  const event = events.find((item) => item.slug === params.slug);
+  const baseEvent = events.find((item) => item.slug === params.slug);
+  const { event } = useEventAvailability(baseEvent);
   const [selectedSeatIds, setSelectedSeatIds] = useState<string[]>([]);
   const [sectionId, setSectionId] = useState(
     event?.seatLayout?.sections[0]?.id ?? "",
@@ -52,15 +54,14 @@ export function TicketSelection() {
   const [tab, setTab] = useState(
     event?.ticketingMode === "RESERVED_SEATING" ? "seated" : "ga",
   );
-  const [holdSeconds, setHoldSeconds] = useState(600);
 
   useEffect(() => {
-    const timer = window.setInterval(
-      () => setHoldSeconds((seconds) => Math.max(0, seconds - 1)),
-      1000,
-    );
-    return () => window.clearInterval(timer);
-  }, []);
+    if (!event) return;
+    if (!sectionId && event.seatLayout?.sections[0]) {
+      setSectionId(event.seatLayout.sections[0].id);
+    }
+    if (event.ticketingMode === "RESERVED_SEATING") setTab("seated");
+  }, [event, sectionId]);
 
   const gaTickets = useMemo(
     () =>
@@ -118,7 +119,7 @@ export function TicketSelection() {
     });
   };
 
-  const addGa = (ticket: TicketType) => {
+  const addGa = async (ticket: TicketType) => {
     const quantity = quantities[ticket.id] ?? 1;
     const availability = getTicketAvailability(ticket);
     if (!availability.available) {
@@ -129,35 +130,43 @@ export function TicketSelection() {
       toast.error(t("errors.required"));
       return;
     }
-    addItem({
-      ownerKey: "local",
-      eventId: event.id,
-      ticketTypeId: ticket.id,
-      quantity,
-      seatIds: [],
-      unitPriceSnapshot: ticket.price,
-    });
-    toast.success(`${ticket.name} ditambahkan ke keranjang.`);
-    setQuantities((current) => ({ ...current, [ticket.id]: 1 }));
+    try {
+      await addItem({
+        ownerKey: "local",
+        eventId: event.id,
+        ticketTypeId: ticket.id,
+        quantity,
+        seatIds: [],
+        unitPriceSnapshot: ticket.price,
+      });
+      toast.success(`${ticket.name} ditambahkan ke keranjang.`);
+      setQuantities((current) => ({ ...current, [ticket.id]: 1 }));
+    } catch {
+      toast.error(t("errors.generic"));
+    }
   };
 
-  const addSeats = () => {
+  const addSeats = async () => {
     if (!seatedTicket || !selectedSeatIds.length) {
       toast.error(t("errors.required"));
       return;
     }
-    addItem({
-      ownerKey: "local",
-      eventId: event.id,
-      ticketTypeId: seatedTicket.id,
-      quantity: selectedSeatIds.length,
-      seatIds: selectedSeatIds,
-      unitPriceSnapshot: seatedTicket.price,
-    });
-    toast.success(
-      `${selectedSeatIds.length} ${t("cart.seats").toLowerCase()} ditambahkan.`,
-    );
-    setSelectedSeatIds([]);
+    try {
+      await addItem({
+        ownerKey: "local",
+        eventId: event.id,
+        ticketTypeId: seatedTicket.id,
+        quantity: selectedSeatIds.length,
+        seatIds: selectedSeatIds,
+        unitPriceSnapshot: seatedTicket.price,
+      });
+      toast.success(
+        `${selectedSeatIds.length} ${t("cart.seats").toLowerCase()} ditambahkan.`,
+      );
+      setSelectedSeatIds([]);
+    } catch {
+      toast.error(t("errors.generic"));
+    }
   };
 
   return (
@@ -341,11 +350,8 @@ export function TicketSelection() {
                 {t("cart.feeNote")}
               </p>
               <div className="mt-4 flex items-center justify-between rounded-xl border border-warning/20 bg-warning/10 px-3 py-2 text-[11px] text-warning-text">
-                <span>Simulasi hold kursi</span>
-                <span className="font-semibold tabular">
-                  {String(Math.floor(holdSeconds / 60)).padStart(2, "0")}:
-                  {String(holdSeconds % 60).padStart(2, "0")}
-                </span>
+                <span>Stok dicek ulang saat checkout</span>
+                <span className="font-semibold tabular">API</span>
               </div>
               <Button
                 asChild

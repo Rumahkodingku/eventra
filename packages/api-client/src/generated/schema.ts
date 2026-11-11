@@ -619,7 +619,8 @@ export interface paths {
         put?: never;
         /** AddWishlist */
         post: operations["addWishlist"];
-        delete?: never;
+        /** ClearWishlist */
+        delete: operations["clearWishlist"];
         options?: never;
         head?: never;
         patch?: never;
@@ -694,6 +695,74 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/organizer/orders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** ListOrganizerOrders */
+        get: operations["listOrganizerOrders"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/organizer/attendees": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** ListOrganizerAttendees */
+        get: operations["listOrganizerAttendees"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/organizer/tickets": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** ListOrganizerTickets */
+        get: operations["listOrganizerTickets"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/events/{eventId}/seats": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** ListClaimedSeats */
+        get: operations["listClaimedSeats"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/organizer/analytics": {
         parameters: {
             query?: never;
@@ -720,6 +789,23 @@ export interface paths {
         };
         /** ExportOrganizerAnalytics */
         get: operations["exportOrganizerAnalytics"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/account/attendees": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** ListMyAttendees */
+        get: operations["listMyAttendees"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1011,16 +1097,16 @@ export interface components {
             phone?: string;
         };
         CreateOrderRequest: {
+            reservation_id: string;
+            promo_code?: string;
             buyer: components["schemas"]["Buyer"];
             payment_method: string;
-            items: {
+            items?: {
                 ticket_type_id: string;
                 quantity: number;
                 seat_ids: string[];
             }[];
-            attendees: {
-                [key: string]: components["schemas"]["AttendeeInput"][];
-            };
+            attendees: components["schemas"]["AttendeeInput"][];
             simulate_failure: boolean;
         };
         OrderItem: {
@@ -1044,7 +1130,10 @@ export interface components {
             id: string;
             order_number: string;
             owner_key: string;
-            buyer: components["schemas"]["Buyer"];
+            user_id?: string;
+            buyer_name: string;
+            buyer_email: string;
+            buyer_phone: string;
             items: components["schemas"]["OrderItem"][];
             /** Format: int64 */
             subtotal: number;
@@ -1109,6 +1198,7 @@ export interface components {
         };
         Notification: {
             id: string;
+            user_id?: string;
             /** @enum {string} */
             type: "ORDER" | "TICKET" | "EVENT" | "SYSTEM";
             title: string;
@@ -1122,6 +1212,7 @@ export interface components {
         Review: {
             id: string;
             event_id: string;
+            user_id?: string;
             author_name: string;
             rating: number;
             comment: string;
@@ -1189,6 +1280,10 @@ export interface components {
             order_updates?: boolean;
             event_reminders?: boolean;
             newsletter?: boolean;
+        };
+        AttendeeList: {
+            items: components["schemas"]["Attendee"][];
+            next_cursor?: string;
         };
         OrganizerEventSummary: {
             id: string;
@@ -2439,6 +2534,24 @@ export interface operations {
             };
         };
     };
+    clearWishlist: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Cleared */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     removeWishlist: {
         parameters: {
             query?: never;
@@ -2555,6 +2668,90 @@ export interface operations {
             };
         };
     };
+    listOrganizerOrders: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Organizer orders */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderList"];
+                };
+            };
+        };
+    };
+    listOrganizerAttendees: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Organizer attendees */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AttendeeList"];
+                };
+            };
+        };
+    };
+    listOrganizerTickets: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Organizer tickets */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TicketList"];
+                };
+            };
+        };
+    };
+    listClaimedSeats: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                eventId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Claimed and sold seat IDs */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        claimed: string[];
+                    };
+                };
+            };
+        };
+    };
     getOrganizerAnalytics: {
         parameters: {
             query?: {
@@ -2595,6 +2792,26 @@ export interface operations {
                 };
                 content: {
                     "text/csv": string;
+                };
+            };
+        };
+    };
+    listMyAttendees: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Attendees for the current principal */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AttendeeList"];
                 };
             };
         };

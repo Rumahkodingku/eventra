@@ -64,8 +64,9 @@ export function EventDetail() {
   const user = useSessionStore((state) => state.user);
   const orders = useOrderStore((state) => state.orders);
   const tickets = useOrderStore((state) => state.tickets);
-  const reviews = useReviewStore((state) => state.reviews);
-  const addReview = useReviewStore((state) => state.addReview);
+  const eventId = events.find((item) => item.slug === params.slug)?.id;
+  const reviews = useReviewStore(eventId, (state) => state.reviews);
+  const addReview = useReviewStore(eventId, (state) => state.addReview);
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState("");
   const [reviewSort, setReviewSort] = useState<"newest" | "highest">("newest");
@@ -538,18 +539,22 @@ export function EventDetail() {
             {eligible ? (
               <form
                 className="mt-5 rounded-2xl border border-line bg-surface p-5"
-                onSubmit={(formEvent) => {
+                onSubmit={async (formEvent) => {
                   formEvent.preventDefault();
                   if (!comment.trim()) return;
-                  addReview({
-                    eventId: event.id,
-                    userId: user?.id,
-                    authorName: user?.name ?? "Guest",
-                    rating,
-                    comment: comment.trim(),
-                  });
-                  setComment("");
-                  toast.success(t("event.reviewSuccess"));
+                  try {
+                    await addReview({
+                      eventId: event.id,
+                      userId: user?.id,
+                      authorName: user?.name ?? "Guest",
+                      rating,
+                      comment: comment.trim(),
+                    });
+                    setComment("");
+                    toast.success(t("event.reviewSuccess"));
+                  } catch {
+                    toast.error(t("errors.generic"));
+                  }
                 }}
               >
                 <p className="text-sm font-semibold">

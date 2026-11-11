@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/eventra/eventra/apps/api/internal/modules/identity"
+	"github.com/eventra/eventra/apps/api/internal/platform/observability"
 )
 
 type Handler struct {
@@ -21,6 +22,7 @@ func (h *Handler) RegisterRoutes(router *gin.RouterGroup, auth *identity.Handler
 	group.Use(auth.Principal())
 	group.GET("/tickets", h.list)
 	group.GET("/tickets/:id", h.get)
+	group.GET("/organizer/tickets", auth.RequireAuth(), auth.RequirePermission("order:read"), h.organizerList)
 	group.POST("/organizer/events/:eventId/check-in", auth.RequireAuth(), auth.RequirePermission("checkin:write"), h.checkIn)
 }
 
@@ -40,6 +42,20 @@ func (h *Handler) get(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, ticket)
+}
+
+func (h *Handler) organizerList(c *gin.Context) {
+	organizationID, err := h.organizationID(c, c.GetString("user_id"))
+	if err != nil {
+		writeError(c, http.StatusForbidden, "AUTH_FORBIDDEN", "Organizer access denied.")
+		return
+	}
+	tickets, err := h.service.ListForOrganization(c.Request.Context(), organizationID)
+	if err != nil {
+		writeError(c, http.StatusInternalServerError, "INTERNAL", "Could not load tickets.")
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"items": tickets, "next_cursor": ""})
 }
 
 func (h *Handler) checkIn(c *gin.Context) {
@@ -69,6 +85,7 @@ func (h *Handler) checkIn(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"ok": true, "ticket_id": ticket.ID, "status": ticket.Status, "checked_in_at": ticket.CheckedInAt})
+	observability.Inc("ticket_checkins_total")
 }
 
 func (h *Handler) organizationID(c *gin.Context, userID string) (string, error) {

@@ -114,6 +114,44 @@ func (s *Service) Get(ctx context.Context, id string) (Reservation, error) {
 	return reservation, nil
 }
 
+func (s *Service) ClaimedSeats(ctx context.Context, eventID string) ([]string, error) {
+	var claimed []string
+	err := s.db.WithContext(ctx).Table("seat_claims").
+		Where("event_id = ?", eventID).
+		Pluck("seat_id", &claimed).Error
+	if err != nil {
+		return nil, err
+	}
+	var sold []string
+	if err := s.db.WithContext(ctx).Table("tickets").
+		Where("event_id = ? AND seat_id IS NOT NULL AND status IN ?", eventID, []string{"VALID", "USED"}).
+		Pluck("seat_id", &sold).Error; err != nil {
+		return nil, err
+	}
+	return append(claimed, sold...), nil
+}
+
+func (s *Service) GetForPrincipal(ctx context.Context, principal, id string) (Reservation, error) {
+	var reservation Reservation
+	if err := s.db.WithContext(ctx).Preload("Items").
+		Where("id = ? AND principal_key = ?", id, principal).First(&reservation).Error; err != nil {
+		return Reservation{}, ErrNotFound
+	}
+	return reservation, nil
+}
+
+func (s *Service) ReleaseForPrincipal(ctx context.Context, principal, id string) error {
+	var count int64
+	if err := s.db.WithContext(ctx).Model(&Reservation{}).
+		Where("id = ? AND principal_key = ?", id, principal).Count(&count).Error; err != nil {
+		return err
+	}
+	if count == 0 {
+		return ErrNotFound
+	}
+	return s.Release(ctx, id)
+}
+
 func (s *Service) Release(ctx context.Context, id string) error {
 	return s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		var reservation Reservation

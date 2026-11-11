@@ -21,7 +21,7 @@ import { toDateTimeLocal } from "@/lib/dates";
 import { createId } from "@/lib/ids";
 import { cloneLayout, getTemplateLayout } from "@/services/catalog/layouts";
 import { useEventStore } from "@/services/hooks/use-event-store";
-import { useOrderStore } from "@/services/hooks/use-order-store";
+import { useOrganizerData } from "@/services/hooks/use-organizer-data";
 import { usePreferencesStore } from "@/stores/preferences";
 
 export default function OrganizerTicketConfigPage() {
@@ -31,7 +31,7 @@ export default function OrganizerTicketConfigPage() {
   const locale = usePreferencesStore((state) => state.locale);
   const events = useEventStore((state) => state.events);
   const updateEvent = useEventStore((state) => state.updateEvent);
-  const orders = useOrderStore((state) => state.orders);
+  const { orders } = useOrganizerData();
   const event = events.find((item) => item.id === params.eventId);
   const [tickets, setTickets] = useState<TicketType[]>(
     event?.ticketTypes ?? [],

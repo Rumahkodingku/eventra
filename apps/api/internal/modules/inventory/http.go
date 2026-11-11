@@ -17,11 +17,21 @@ func NewHandler(service *Service) *Handler {
 }
 
 func (h *Handler) RegisterRoutes(router *gin.RouterGroup, auth *identity.Handler) {
+	router.GET("/events/:event/seats", h.seats)
 	group := router.Group("/checkout")
 	group.Use(auth.Principal())
 	group.POST("/reservations", h.reserve)
 	group.GET("/reservations/:id", h.get)
 	group.DELETE("/reservations/:id", h.release)
+}
+
+func (h *Handler) seats(c *gin.Context) {
+	claimed, err := h.service.ClaimedSeats(c.Request.Context(), c.Param("event"))
+	if err != nil {
+		writeError(c, http.StatusInternalServerError, "INTERNAL", "Could not load seats.")
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"claimed": claimed})
 }
 
 type reserveRequest struct {
@@ -56,7 +66,7 @@ func (h *Handler) reserve(c *gin.Context) {
 }
 
 func (h *Handler) get(c *gin.Context) {
-	reservation, err := h.service.Get(c.Request.Context(), c.Param("id"))
+	reservation, err := h.service.GetForPrincipal(c.Request.Context(), c.GetString("principal_key"), c.Param("id"))
 	if err != nil {
 		writeError(c, http.StatusNotFound, "NOT_FOUND", "Reservation not found.")
 		return
@@ -65,7 +75,7 @@ func (h *Handler) get(c *gin.Context) {
 }
 
 func (h *Handler) release(c *gin.Context) {
-	if err := h.service.Release(c.Request.Context(), c.Param("id")); err != nil {
+	if err := h.service.ReleaseForPrincipal(c.Request.Context(), c.GetString("principal_key"), c.Param("id")); err != nil {
 		writeError(c, http.StatusNotFound, "NOT_FOUND", "Reservation not found.")
 		return
 	}

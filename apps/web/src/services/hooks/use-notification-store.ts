@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { seedData } from "@/data/seed";
 import type { Notification } from "@/domain/types";
-import { notificationRepository } from "@/services/mock";
+import { apiMode, notificationRepository } from "@/services/repositories";
 import { useNotificationStore as useRawNotificationStore } from "@/stores/notifications";
 
 interface NotificationState {
@@ -16,8 +16,8 @@ interface NotificationState {
     message: string;
     targetUrl?: string;
   }) => void;
-  markRead: (id: string) => void;
-  markAllRead: (userId?: string) => void;
+  markRead: (id: string) => Promise<void>;
+  markAllRead: (userId?: string) => Promise<void>;
   reset: () => void;
 }
 
@@ -28,23 +28,32 @@ export function useNotificationStore<T>(
   const query = useQuery({
     queryKey: ["notifications"],
     queryFn: notificationRepository.list,
-    initialData: seedData.notifications,
+    initialData: apiMode ? undefined : seedData.notifications,
   });
 
   const state = useMemo<NotificationState>(
     () => ({
       notifications: query.data ?? [],
       addNotification: (input) => {
+        if (apiMode) return;
         useRawNotificationStore.getState().addNotification(input);
         void queryClient.invalidateQueries({ queryKey: ["notifications"] });
       },
-      markRead: (id) => {
-        useRawNotificationStore.getState().markRead(id);
-        void queryClient.invalidateQueries({ queryKey: ["notifications"] });
+      markRead: async (id) => {
+        if (apiMode) {
+          await notificationRepository.markRead(id);
+        } else {
+          useRawNotificationStore.getState().markRead(id);
+        }
+        await queryClient.invalidateQueries({ queryKey: ["notifications"] });
       },
-      markAllRead: (userId) => {
-        useRawNotificationStore.getState().markAllRead(userId);
-        void queryClient.invalidateQueries({ queryKey: ["notifications"] });
+      markAllRead: async (userId) => {
+        if (apiMode) {
+          await notificationRepository.markAllRead();
+        } else {
+          useRawNotificationStore.getState().markAllRead(userId);
+        }
+        await queryClient.invalidateQueries({ queryKey: ["notifications"] });
       },
       reset: () => {
         useRawNotificationStore.getState().reset();

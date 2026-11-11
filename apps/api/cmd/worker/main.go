@@ -12,6 +12,7 @@ import (
 	"github.com/eventra/eventra/apps/api/internal/platform/config"
 	"github.com/eventra/eventra/apps/api/internal/platform/database"
 	"github.com/eventra/eventra/apps/api/internal/platform/logger"
+	"github.com/eventra/eventra/apps/api/internal/platform/observability"
 )
 
 func main() {
@@ -48,6 +49,7 @@ func main() {
 			}
 			if count > 0 {
 				log.Info("reservations_expired", "count", count)
+				observability.Add("reservations_expired_total", int64(count))
 			}
 		}
 	}

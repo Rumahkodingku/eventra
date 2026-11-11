@@ -72,7 +72,8 @@ func main() {
 	authHandler := identity.NewHandler(authService, cfg.CookieSecure)
 	var imageStore *storage.ImageStore
 	if store, err := storage.NewImageStore(startupCtx, storage.Config{
-		Endpoint: cfg.S3Endpoint, Region: cfg.S3Region, AccessKey: cfg.S3AccessKey, SecretKey: cfg.S3SecretKey,
+		Endpoint: cfg.S3Endpoint, PublicEndpoint: cfg.S3PublicEndpoint,
+		Region: cfg.S3Region, AccessKey: cfg.S3AccessKey, SecretKey: cfg.S3SecretKey,
 		Bucket: cfg.S3Bucket, UseSSL: cfg.S3UseSSL, PublicBase: cfg.S3PublicBase,
 		CorsOrigins: cfg.S3CorsOrigins,
 	}); err == nil {

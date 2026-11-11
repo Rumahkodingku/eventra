@@ -18,7 +18,7 @@ func NewHandler(service *Service) *Handler {
 
 func (h *Handler) RegisterRoutes(router *gin.RouterGroup, auth *identity.Handler) {
 	group := router.Group("/checkout")
-	group.Use(auth.RequireAuth())
+	group.Use(auth.Principal())
 	group.POST("/reservations", h.reserve)
 	group.GET("/reservations/:id", h.get)
 	group.DELETE("/reservations/:id", h.release)
@@ -47,7 +47,7 @@ func (h *Handler) reserve(c *gin.Context) {
 			SeatIDs:      item.SeatIDs,
 		})
 	}
-	reservation, err := h.service.Reserve(c.Request.Context(), "user:"+c.GetString("user_id"), request.EventID, items)
+	reservation, err := h.service.Reserve(c.Request.Context(), c.GetString("principal_key"), request.EventID, items)
 	if err != nil {
 		writeError(c, http.StatusConflict, "INVENTORY_CONFLICT", "One or more selected items are no longer available.")
 		return

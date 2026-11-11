@@ -193,6 +193,37 @@ func (h *Handler) RequireAuth() gin.HandlerFunc {
 	return h.requireAuth()
 }
 
+func (h *Handler) Principal() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		if raw, err := c.Cookie(AccessCookieName); err == nil && raw != "" {
+			if claims, err := h.service.ParseAccessToken(raw); err == nil {
+				c.Set("user_id", claims.Subject)
+				c.Set("session_id", claims.SessionID)
+				c.Set("principal_key", "user:"+claims.Subject)
+				c.Next()
+				return
+			}
+		}
+		if raw, err := c.Cookie(GuestCookieName); err == nil && raw != "" {
+			if guestID, err := h.service.ResolveGuest(c.Request.Context(), raw); err == nil {
+				c.Set("principal_key", "guest:"+guestID)
+				c.Next()
+				return
+			}
+		}
+		guestID, secret, expiresAt, err := h.service.CreateGuest(c.Request.Context())
+		if err != nil {
+			writeError(c, http.StatusInternalServerError, "INTERNAL", "Could not create guest session.")
+			c.Abort()
+			return
+		}
+		c.SetSameSite(http.SameSiteLaxMode)
+		c.SetCookie(GuestCookieName, secret, maxAge(expiresAt), "/", "", h.cookieSecure, true)
+		c.Set("principal_key", "guest:"+guestID)
+		c.Next()
+	}
+}
+
 func (h *Handler) RequirePermission(permission string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userID := c.GetString("user_id")

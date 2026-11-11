@@ -808,6 +808,7 @@ export interface components {
             code: string;
         };
         QuoteRequest: {
+            event_id: string;
             items: {
                 ticket_type_id: string;
                 quantity: number;

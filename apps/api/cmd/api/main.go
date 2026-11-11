@@ -9,6 +9,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/eventra/eventra/apps/api/internal/modules/cart"
 	"github.com/eventra/eventra/apps/api/internal/modules/catalog"
 	"github.com/eventra/eventra/apps/api/internal/modules/identity"
 	"github.com/eventra/eventra/apps/api/internal/modules/inventory"
@@ -62,14 +63,16 @@ func main() {
 	})
 	authHandler := identity.NewHandler(authService, cfg.CookieSecure)
 	catalogHandler := catalog.NewHandler(catalog.NewService(db))
-	inventoryHandler := inventory.NewHandler(inventory.NewService(db, 10*time.Minute))
+	inventoryService := inventory.NewService(db, 10*time.Minute)
+	inventoryHandler := inventory.NewHandler(inventoryService)
+	cartHandler := cart.NewHandler(cart.NewService(db, inventoryService))
 
 	server := httpserver.NewServer(
 		httpserver.ServerConfig{HTTPAddr: cfg.HTTPAddr, WebOrigin: cfg.WebOrigin},
 		log,
 		httpserver.Dependencies{
 			DB: db, Redis: redisClient, Auth: authHandler,
-			Catalog: catalogHandler, Inventory: inventoryHandler,
+			Catalog: catalogHandler, Inventory: inventoryHandler, Cart: cartHandler,
 		},
 	)
 

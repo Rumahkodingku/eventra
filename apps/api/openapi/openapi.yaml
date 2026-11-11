@@ -457,8 +457,10 @@ components:
           type: string
     QuoteRequest:
       type: object
-      required: [items]
+      required: [event_id, items]
       properties:
+        event_id:
+          type: string
         items:
           type: array
           items:

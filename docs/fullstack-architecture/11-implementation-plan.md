@@ -1801,30 +1801,30 @@ Phase 7.
 
 #### Task 8.1 — Cart schema and service
 
-- [ ] Create carts, cart items, promotions, promotion redemptions.
-- [ ] Create cart for guest/auth principal.
-- [ ] Add/update/remove items with ownership.
-- [ ] Reject invalid quantities, inactive ticket types, and closed sales.
-- [ ] Keep cart across refresh via server state.
+- [x] Create carts, cart items, promotions, promotion redemptions.
+- [x] Create cart for guest/auth principal.
+- [x] Add/update/remove items with ownership.
+- [x] Reject invalid quantities, inactive ticket types, and closed sales.
+- [x] Keep cart across refresh via server state.
 
 **Verification:** cart ownership tests; cart persistence E2E.
 
 #### Task 8.2 — Promo validation
 
-- [ ] Validate code, active window, minimum spend, eligible events/categories, usage limit.
-- [ ] Recalculate discount on server.
-- [ ] Record redemption transactionally.
-- [ ] Return stable error codes.
+- [x] Validate code, active window, minimum spend, eligible events/categories, usage limit.
+- [x] Recalculate discount on server.
+- [x] Record redemption transactionally.
+- [x] Return stable error codes.
 
 **Verification:** all promo error cases from current rules.
 
 #### Task 8.3 — Quote use case
 
-- [ ] Recalculate prices from DB.
-- [ ] Calculate 5% fee rounded to 100, capped 25,000.
-- [ ] Create/reuse reservation.
-- [ ] Return line items, totals, expiry, and warnings.
-- [ ] Do not trust client totals or price snapshots.
+- [x] Recalculate prices from DB.
+- [x] Calculate 5% fee rounded to 100, capped 25,000.
+- [x] Create/reuse reservation.
+- [x] Return line items, totals, expiry, and warnings.
+- [x] Do not trust client totals or price snapshots.
 
 **Verification:** price tampering test; quote expiry test.
 

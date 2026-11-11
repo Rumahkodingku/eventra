@@ -13,6 +13,7 @@ import (
 	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 
+	"github.com/eventra/eventra/apps/api/internal/modules/cart"
 	"github.com/eventra/eventra/apps/api/internal/modules/catalog"
 	"github.com/eventra/eventra/apps/api/internal/modules/identity"
 	"github.com/eventra/eventra/apps/api/internal/modules/inventory"
@@ -24,6 +25,7 @@ type Dependencies struct {
 	Auth      *identity.Handler
 	Catalog   *catalog.Handler
 	Inventory *inventory.Handler
+	Cart      *cart.Handler
 }
 
 func NewRouter(cfg Config, log *slog.Logger, deps Dependencies) *gin.Engine {
@@ -45,6 +47,9 @@ func NewRouter(cfg Config, log *slog.Logger, deps Dependencies) *gin.Engine {
 	}
 	if deps.Inventory != nil && deps.Auth != nil {
 		deps.Inventory.RegisterRoutes(v1, deps.Auth)
+	}
+	if deps.Cart != nil && deps.Auth != nil {
+		deps.Cart.RegisterRoutes(v1, deps.Auth)
 	}
 	v1.GET("/health/live", live)
 	v1.GET("/health/ready", ready(deps))

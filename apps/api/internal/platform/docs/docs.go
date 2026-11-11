@@ -54,6 +54,9 @@ func (h *Handler) RegisterRoutes(router gin.IRoutes) {
 	router.GET("/docs", h.docs)
 	router.GET("/openapi.yaml", h.spec)
 	router.GET("/docs/scalar.js", h.asset)
+	router.GET("/favicon.ico", func(c *gin.Context) {
+		c.Status(http.StatusNoContent)
+	})
 }
 
 func (h *Handler) docs(c *gin.Context) {

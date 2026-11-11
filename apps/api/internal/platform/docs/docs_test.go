@@ -45,6 +45,12 @@ func TestHandlerServesDocsSpecAndAsset(t *testing.T) {
 	if asset.Body.Len() < 1000 {
 		t.Fatalf("GET /docs/scalar.js body = %d bytes, want > 1000", asset.Body.Len())
 	}
+
+	favicon := httptest.NewRecorder()
+	router.ServeHTTP(favicon, httptest.NewRequest(http.MethodGet, "/favicon.ico", nil))
+	if favicon.Code != http.StatusNoContent {
+		t.Fatalf("GET /favicon.ico status = %d, want 204", favicon.Code)
+	}
 }
 
 func TestHandlerDisabledReturnsNotFound(t *testing.T) {

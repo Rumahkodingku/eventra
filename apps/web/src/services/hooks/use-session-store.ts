@@ -40,21 +40,29 @@ export function useSessionStore<T>(selector: (state: SessionState) => T): T {
       user: query.data ?? null,
       login: async (email, password) => {
         const result = await userRepository.login({ email, password });
-        queryClient.setQueryData(["session"], result.user ?? null);
+        if (result.ok) {
+          queryClient.clear();
+          queryClient.setQueryData(["session"], result.user ?? null);
+        }
         return result;
       },
       loginDemo: async (role) => {
         const user = await userRepository.loginDemo(role);
+        queryClient.clear();
         queryClient.setQueryData(["session"], user);
         return user;
       },
       register: async (input) => {
         const result = await userRepository.register(input);
-        if (result.user) queryClient.setQueryData(["session"], result.user);
+        if (result.user) {
+          queryClient.clear();
+          queryClient.setQueryData(["session"], result.user);
+        }
         return result;
       },
       logout: async () => {
         await userRepository.logout();
+        queryClient.clear();
         queryClient.setQueryData(["session"], null);
       },
       updateProfile: async (input) => {

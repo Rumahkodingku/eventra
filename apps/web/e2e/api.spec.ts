@@ -95,6 +95,35 @@ test("customer buys a ticket and organizer checks it in", async ({ page }) => {
   await expect(page.getByText(/Check-in berhasil/i).first()).toBeVisible();
 });
 
+test("guest can buy and see the ticket wallet", async ({ page }) => {
+  await page.goto("/events/senja-sessions-aurora-live/tickets");
+  await page
+    .getByRole("button", { name: /Tambah ke keranjang/i })
+    .first()
+    .click();
+  await page.goto("/checkout");
+  await page.locator("#buyer-name").fill("Guest Buyer");
+  await page.locator("#buyer-email").fill("guest@example.com");
+  await page.locator("#buyer-phone").fill("08123456789");
+  await page
+    .getByRole("button", { name: /Gunakan data pembeli untuk semua tiket/i })
+    .click();
+  await page
+    .getByRole("checkbox", { name: /Saya menyetujui syarat dan ketentuan/i })
+    .check();
+  await page
+    .getByRole("checkbox", {
+      name: /Saya memahami bahwa pembayaran ini adalah simulasi/i,
+    })
+    .check();
+  await page.getByRole("button", { name: /Bayar sekarang/i }).click();
+
+  await expect(page).toHaveURL(/\/checkout\/success\/[0-9A-Z]{26}$/);
+  await page.goto("/tickets");
+  await expect(page.getByText("Senja Sessions: Aurora Live")).toBeVisible();
+  await expect(page.getByText(/TKT-[0-9A-Z]+/).first()).toBeVisible();
+});
+
 test("failed payment shows the server failure state", async ({ page }) => {
   await page.goto("/login");
   await page.getByRole("button", { name: /Masuk sebagai customer/i }).click();

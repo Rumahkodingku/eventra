@@ -29,7 +29,7 @@ func (h *Handler) RegisterRoutes(router *gin.RouterGroup, auth *identity.Handler
 	group.POST("/checkout/orders", h.create)
 	group.GET("/orders", h.list)
 	group.GET("/orders/:id", h.get)
-	group.GET("/account/attendees", auth.RequireAuth(), h.myAttendees)
+	group.GET("/account/attendees", h.myAttendees)
 	group.GET("/organizer/orders", auth.RequireAuth(), auth.RequirePermission("order:read"), h.organizerList)
 	group.GET("/organizer/attendees", auth.RequireAuth(), auth.RequirePermission("attendee:read"), h.organizerAttendees)
 }

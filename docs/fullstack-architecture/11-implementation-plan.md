@@ -2259,7 +2259,7 @@ Phase 11.
 - [x] Review CSRF/CORS/cookies.
 - [x] Review webhook signature and replay.
 - [x] Review upload validation.
-- [x] Run dependency and container scans.
+- [ ] Run dependency and container scans.
 - [x] Fix all critical/high findings.
 
 **Verification:** no critical/high findings.

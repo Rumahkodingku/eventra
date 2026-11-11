@@ -92,7 +92,20 @@ func NewRouter(cfg Config, log *slog.Logger, deps Dependencies) *gin.Engine {
 	v1.GET("/health/ready", ready(deps))
 	router.GET("/metrics", func(c *gin.Context) {
 		c.Header("Content-Type", "text/plain; version=0.0.4; charset=utf-8")
-		c.String(http.StatusOK, observability.Render())
+		output := observability.Render()
+		if deps.DB != nil {
+			if sqlDB, err := deps.DB.DB(); err == nil {
+				stats := sqlDB.Stats()
+				output += fmt.Sprintf("# HELP eventra_db_open_connections Open MySQL connections.\n# TYPE eventra_db_open_connections gauge\neventra_db_open_connections %d\n", stats.OpenConnections)
+				output += fmt.Sprintf("# HELP eventra_db_in_use_connections MySQL connections in use.\n# TYPE eventra_db_in_use_connections gauge\neventra_db_in_use_connections %d\n", stats.InUse)
+			}
+		}
+		redisUp := 0
+		if deps.Redis != nil && deps.Redis.Ping(c.Request.Context()).Err() == nil {
+			redisUp = 1
+		}
+		output += fmt.Sprintf("# HELP eventra_redis_up Redis reachability.\n# TYPE eventra_redis_up gauge\neventra_redis_up %d\n", redisUp)
+		c.String(http.StatusOK, output)
 	})
 	return router
 }

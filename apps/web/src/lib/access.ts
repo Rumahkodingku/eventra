@@ -4,7 +4,11 @@ export function visibleOrdersForUser(
   orders: Order[],
   user: User | null,
 ): Order[] {
-  if (!user) return orders.filter((order) => order.ownerKey === "guest-local");
+  if (!user)
+    return orders.filter(
+      (order) =>
+        order.ownerKey === "guest-local" || order.ownerKey.startsWith("guest:"),
+    );
   return orders.filter(
     (order) => order.userId === user.id || order.ownerKey === "guest-local",
   );

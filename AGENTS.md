@@ -23,7 +23,8 @@ Eventra is a fullstack demo: Next.js `apps/web` plus Go/MySQL API `apps/api`. Fr
 Local infrastructure:
 
 ```bash
-MYSQL_PORT=3307 docker compose up -d mysql redis
+MYSQL_PORT=3307 docker compose up -d mysql redis garage
+./scripts/garage-bootstrap.sh
 cd apps/api
 APP_ENV=development DATABASE_URL='eventra:eventra@tcp(127.0.0.1:3307)/eventra?parseTime=true&charset=utf8mb4&loc=UTC' REDIS_URL='redis://127.0.0.1:6379/0' MIGRATIONS_DIR=./migrations go run ./cmd/migrate up
 # then run cmd/seed and CATALOG_SEED_FILE=./seed/catalog.json cmd/seed-catalog
@@ -34,6 +35,7 @@ APP_ENV=development DATABASE_URL='eventra:eventra@tcp(127.0.0.1:3307)/eventra?pa
 - Routes live in `apps/web/src/app`: `(public)` customer, `(account)` customer account, `(auth)` login/register, and `organizer`. Feature UI lives in `apps/web/src/features/<feature>`.
 - Types are centralized in `apps/web/src/domain/types.ts`. Domain helpers live in `apps/web/src/lib`. Seed data for mock mode is in `apps/web/src/data/seed`.
 - `apps/web/src/services/repositories/index.ts` selects API adapters by default and mock adapters when `NEXT_PUBLIC_API_MODE=mock`. API adapters live in `apps/web/src/services/api`.
+- Image uploads use the S3-compatible adapter in `apps/api/internal/platform/storage` with AWS SDK Go v2 and Garage. Local Garage config is `infra/garage/garage.toml`; bootstrap with `./scripts/garage-bootstrap.sh`. CORS is configured by the API with `S3_CORS_ORIGINS`.
 - TanStack Query hooks in `apps/web/src/services/hooks` are the UI data facade. Do not call the generated API client directly from page components; add a repository method or hook instead.
 - Go modules live in `apps/api/internal/modules`: `identity`, `catalog`, `inventory`, `cart`, `order`, `ticket`, `notification`, `review`, `wishlist`, `analytics`, `organization`. Shared platform code is in `apps/api/internal/platform`.
 - OpenAPI is the contract in `apps/api/openapi/openapi.yaml`; the generated client is `packages/api-client/src/generated/schema.ts`. Regenerate after contract changes.

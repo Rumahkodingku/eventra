@@ -5,6 +5,8 @@ import (
 	"os"
 	"strconv"
 	"strings"
+
+	"github.com/joho/godotenv"
 )
 
 const (
@@ -17,11 +19,14 @@ const (
 	defaultAccessTTL         = 15
 	defaultRefreshTTL        = 720
 	defaultCookieSecure      = false
-	defaultS3Endpoint        = "localhost:9000"
-	defaultS3AccessKey       = "minioadmin"
-	defaultS3SecretKey       = "minioadmin"
-	defaultS3Bucket          = "eventra"
-	defaultS3PublicBase      = "http://localhost:9000/eventra"
+	defaultS3Endpoint        = "localhost:3900"
+	defaultS3PublicEndpoint  = "http://localhost:3900"
+	defaultS3Region          = "garage"
+	defaultS3AccessKey       = "GK000000000000000000000000"
+	defaultS3SecretKey       = "0000000000000000000000000000000000000000000000000000000000000000"
+	defaultS3Bucket          = "eventra-uploads"
+	defaultS3PublicBase      = "http://localhost:3900/eventra-uploads"
+	defaultS3CorsOrigins     = "http://localhost:3000"
 	defaultMockPaymentSecret = "mock-payment-secret"
 	defaultDocsEnabled       = true
 )
@@ -38,16 +43,20 @@ type Config struct {
 	RefreshTTLHours   int
 	CookieSecure      bool
 	S3Endpoint        string
+	S3PublicEndpoint  string
+	S3Region          string
 	S3AccessKey       string
 	S3SecretKey       string
 	S3Bucket          string
 	S3UseSSL          bool
 	S3PublicBase      string
+	S3CorsOrigins     string
 	MockPaymentSecret string
 	DocsEnabled       bool
 }
 
 func Load() (Config, error) {
+	_ = godotenv.Load()
 	cfg := Config{
 		AppEnv:            getenv("APP_ENV", "development"),
 		HTTPAddr:          getenv("HTTP_ADDR", defaultHTTPAddr),
@@ -60,11 +69,14 @@ func Load() (Config, error) {
 		RefreshTTLHours:   getenvInt("JWT_REFRESH_TTL_HOURS", defaultRefreshTTL),
 		CookieSecure:      getenvBool("COOKIE_SECURE", defaultCookieSecure),
 		S3Endpoint:        getenv("S3_ENDPOINT", defaultS3Endpoint),
+		S3PublicEndpoint:  getenv("S3_PUBLIC_ENDPOINT", defaultS3PublicEndpoint),
+		S3Region:          getenv("S3_REGION", defaultS3Region),
 		S3AccessKey:       getenv("S3_ACCESS_KEY", defaultS3AccessKey),
 		S3SecretKey:       getenv("S3_SECRET_KEY", defaultS3SecretKey),
 		S3Bucket:          getenv("S3_BUCKET", defaultS3Bucket),
 		S3UseSSL:          getenvBool("S3_USE_SSL", false),
 		S3PublicBase:      getenv("S3_PUBLIC_BASE", defaultS3PublicBase),
+		S3CorsOrigins:     getenv("S3_CORS_ORIGINS", defaultS3CorsOrigins),
 		MockPaymentSecret: getenv("MOCK_PAYMENT_SECRET", defaultMockPaymentSecret),
 		DocsEnabled:       getenvBool("API_DOCS_ENABLED", defaultDocsEnabled),
 	}
@@ -72,6 +84,7 @@ func Load() (Config, error) {
 	if err := cfg.Validate(); err != nil {
 		return Config{}, err
 	}
+
 	return cfg, nil
 }
 

@@ -1,7 +1,10 @@
 import type { NextRequest } from "next/server";
 
 const API_BASE = (
-  process.env["API_INTERNAL_URL"] ?? "http://localhost:8080"
+  process.env["API_INTERNAL_URL"] ??
+  (process.env.NODE_ENV === "production"
+    ? "http://eventra-api:8080"
+    : "http://localhost:8080")
 ).replace(/\/$/, "");
 
 async function proxy(
